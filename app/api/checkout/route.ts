@@ -5,6 +5,17 @@ export const runtime = "nodejs";
 
 const TIERS = new Set<SubscriptionTier>(["starter", "team", "scale"]);
 
+const EMAIL_MAX = 254;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeOptionalEmail(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim().toLowerCase();
+  if (!trimmed || trimmed.length > EMAIL_MAX) return undefined;
+  if (!EMAIL_RE.test(trimmed)) return undefined;
+  return trimmed;
+}
+
 export async function POST(req: NextRequest) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json(
@@ -20,10 +31,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const tier = (body as { tier?: string }).tier;
+  const parsed = body as { tier?: string; email?: string };
+  const tier = parsed.tier;
   if (!tier || !TIERS.has(tier as SubscriptionTier)) {
     return NextResponse.json({ error: "Missing or invalid tier." }, { status: 400 });
   }
+
+  const customerEmail = normalizeOptionalEmail(parsed.email);
 
   const priceId = getPriceIdForTier(tier as SubscriptionTier);
   if (!priceId) {
@@ -43,10 +57,13 @@ export async function POST(req: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/pricing?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/billing/return?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?canceled=1`,
       allow_promotion_codes: true,
       billing_address_collection: "required",
+      ...(customerEmail
+        ? { customer_email: customerEmail, client_reference_id: customerEmail }
+        : {}),
       subscription_data: {
         metadata: { tier },
       },

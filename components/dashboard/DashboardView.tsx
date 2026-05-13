@@ -3,11 +3,16 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { AgentCard } from "@/components/AgentCard";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
+import { useBillingStatus } from "@/hooks/useBillingStatus";
+import { featuredAgents } from "@/lib/dashboard-featured";
 
 export function DashboardView() {
   const router = useRouter();
   const { user, ready, signOut, completeOnboarding } = useAuth();
+  const billing = useBillingStatus(user?.email, ready);
 
   useEffect(() => {
     if (!ready) return;
@@ -33,28 +38,101 @@ export function DashboardView() {
     );
   }
 
+  if (billing.loading) {
+    return (
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-sm text-vaibee-muted">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-vaibee-border border-t-vaibee-cyan" aria-hidden />
+        <p>Checking your subscription…</p>
+      </div>
+    );
+  }
+
+  if (!billing.active) {
+    return (
+      <div className="mx-auto max-w-lg space-y-8 py-6">
+        <header className="space-y-2 text-center">
+          <p className="text-sm font-semibold uppercase tracking-wide text-vaibee-cyan">Dashboard</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-vaibee-navy">Active subscription required</h1>
+          <p className="text-sm leading-relaxed text-vaibee-muted">
+            Signed in as <span className="font-mono text-vaibee-navy">{user.email}</span>. We do not see an active plan
+            for this email yet. Use the same address in Stripe Checkout, then refresh this page or focus the window to
+            sync.
+          </p>
+        </header>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/pricing"
+            className="inline-flex items-center justify-center rounded-2xl bg-vaibee-navy px-6 py-3 text-sm font-semibold text-white transition hover:bg-vaibee-navy-soft"
+          >
+            View plans
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              signOut();
+              router.push("/auth?next=/dashboard&notice=subscribed");
+            }}
+            className="inline-flex items-center justify-center rounded-2xl border border-vaibee-border bg-vaibee-card px-6 py-3 text-sm font-semibold text-vaibee-navy transition hover:border-vaibee-cyan/40"
+          >
+            Use a different account
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const isNew = !user.onboardingComplete;
+  const planLabel = billing.tier
+    ? `Active plan · ${billing.tier.charAt(0).toUpperCase()}${billing.tier.slice(1)}`
+    : null;
+  const picks = featuredAgents(3);
 
   return (
     <div className="mx-auto max-w-5xl space-y-10">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-vaibee-cyan">Dashboard</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-vaibee-navy md:text-4xl">
-            {isNew ? `Welcome, ${user.name}` : `Good to see you, ${user.name}`}
-          </h1>
-          <p className="mt-2 max-w-2xl text-vaibee-muted">
-            {isNew
-              ? "You are in the new viber path — finish the quick checklist so your workspace feels like home."
-              : "Here is a snapshot of your hive. Jump back into the store or wire another agent when inspiration hits."}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <DashboardProfileCard user={user} planLabel={planLabel} />
+
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Link
+          href="/apply"
+          className="group flex flex-col justify-between rounded-3xl border border-vaibee-border bg-gradient-to-br from-vaibee-navy to-[#0d3d52] p-6 text-white shadow-sm ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:shadow-lg lg:col-span-2"
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Ship</p>
+            <h2 className="mt-2 text-xl font-semibold tracking-tight">New agent ship</h2>
+            <p className="mt-2 text-sm leading-relaxed text-white/85">
+              Package your API, pitch the hive, and list when you are ready. One funnel for builders going live.
+            </p>
+          </div>
+          <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-[var(--vaibee-cyan)] group-hover:underline">
+            Start application →
+          </span>
+        </Link>
+        <Link
+          href="/apply"
+          className="flex flex-col justify-between rounded-3xl border border-dashed border-vaibee-cyan/45 bg-[var(--vaibee-cyan-dim)] p-6 transition hover:border-vaibee-cyan/70 hover:shadow-md"
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-vaibee-navy/70">Program</p>
+            <h2 className="mt-2 text-lg font-semibold text-vaibee-navy">Apply for vibers</h2>
+            <p className="mt-2 text-sm text-vaibee-navy/80">
+              Join the curated builder program — review, feedback, and a path to the public store.
+            </p>
+          </div>
+          <span className="mt-4 text-sm font-semibold text-vaibee-cyan">Learn more →</span>
+        </Link>
+        <div className="flex flex-col gap-2 rounded-3xl border border-vaibee-border bg-vaibee-card p-6 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-vaibee-muted">Quick</p>
           <Link
             href="/store"
-            className="rounded-xl border border-vaibee-border bg-vaibee-card px-4 py-2 text-sm font-semibold text-vaibee-navy transition hover:border-vaibee-cyan/40"
+            className="rounded-xl border border-vaibee-border bg-white px-4 py-3 text-center text-sm font-semibold text-vaibee-navy transition hover:border-vaibee-cyan/40"
           >
             Open store
+          </Link>
+          <Link
+            href="/dashboard/profile"
+            className="rounded-xl bg-vaibee-navy px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-vaibee-navy-soft"
+          >
+            Edit profile
           </Link>
           <button
             type="button"
@@ -62,12 +140,12 @@ export function DashboardView() {
               signOut();
               router.push("/");
             }}
-            className="rounded-xl bg-vaibee-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-vaibee-navy-soft"
+            className="rounded-xl border border-transparent px-4 py-2 text-sm font-semibold text-vaibee-muted transition hover:text-vaibee-navy"
           >
             Sign out
           </button>
         </div>
-      </header>
+      </section>
 
       {isNew ? (
         <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -120,16 +198,6 @@ export function DashboardView() {
                 <dt className="text-xs font-semibold uppercase tracking-wide text-vaibee-muted">Email</dt>
                 <dd className="mt-1 font-mono text-sm text-vaibee-navy">{user.email}</dd>
               </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-vaibee-muted">Member since</dt>
-                <dd className="mt-1 text-sm text-vaibee-navy">
-                  {new Date(user.createdAt).toLocaleDateString(undefined, {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </dd>
-              </div>
             </dl>
             <Link href="/api-docs" className="inline-flex text-sm font-semibold text-vaibee-cyan hover:underline">
               Read the API docs →
@@ -151,6 +219,23 @@ export function DashboardView() {
           ))}
         </section>
       )}
+
+      <section className="space-y-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-vaibee-navy">Featured agents</h2>
+            <p className="mt-1 text-sm text-vaibee-muted">Top-rated picks from the hive — wire one into your stack today.</p>
+          </div>
+          <Link href="/store" className="text-sm font-semibold text-vaibee-cyan hover:underline">
+            Browse store
+          </Link>
+        </div>
+        <div className="grid gap-5 md:grid-cols-3">
+          {picks.map((agent) => (
+            <AgentCard key={agent.slug} agent={agent} />
+          ))}
+        </div>
+      </section>
 
       {!isNew ? (
         <section className="rounded-3xl border border-vaibee-border bg-vaibee-card p-6 shadow-sm">

@@ -12,11 +12,16 @@ import {
 const USERS_KEY = "vaibee_users_v1";
 const SESSION_KEY = "vaibee_session_v1";
 
+const BIO_MAX = 480;
+
 export type SessionUser = {
   email: string;
   name: string;
   createdAt: string;
   onboardingComplete: boolean;
+  bio: string;
+  avatarDataUrl: string | null;
+  headerDataUrl: string | null;
 };
 
 type StoredUser = SessionUser & { password: string };
@@ -28,6 +33,12 @@ type AuthContextValue = {
   signUp: (email: string, password: string, name: string) => Promise<{ ok: boolean; error?: string }>;
   signOut: () => void;
   completeOnboarding: () => void;
+  updateProfile: (patch: {
+    name?: string;
+    bio?: string;
+    avatarDataUrl?: string | null;
+    headerDataUrl?: string | null;
+  }) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,8 +84,25 @@ function toSession(u: StoredUser): SessionUser {
     email: u.email,
     name: u.name,
     createdAt: u.createdAt,
-    onboardingComplete: u.onboardingComplete,
+    onboardingComplete: Boolean(u.onboardingComplete),
+    bio: typeof u.bio === "string" ? u.bio.slice(0, BIO_MAX) : "",
+    avatarDataUrl: typeof u.avatarDataUrl === "string" ? u.avatarDataUrl : null,
+    headerDataUrl: typeof u.headerDataUrl === "string" ? u.headerDataUrl : null,
   };
+}
+
+function ensureProfileFields(u: StoredUser): StoredUser {
+  if (typeof u.bio !== "string") u.bio = "";
+  if (u.avatarDataUrl !== null && u.avatarDataUrl !== undefined && typeof u.avatarDataUrl !== "string") {
+    u.avatarDataUrl = null;
+  }
+  if (u.headerDataUrl !== null && u.headerDataUrl !== undefined && typeof u.headerDataUrl !== "string") {
+    u.headerDataUrl = null;
+  }
+  if (typeof u.avatarDataUrl !== "string") u.avatarDataUrl = null;
+  if (typeof u.headerDataUrl !== "string") u.headerDataUrl = null;
+  u.bio = u.bio.slice(0, BIO_MAX);
+  return u;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -90,7 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     const users = readUsers();
     const found = users[email.toLowerCase()];
-    setUser(found ? toSession(found) : null);
+    if (found) {
+      const normalized = ensureProfileFields(found);
+      users[email.toLowerCase()] = normalized;
+      writeUsers(users);
+      setUser(toSession(normalized));
+    } else {
+      setUser(null);
+    }
     setReady(true);
   }, []);
 
@@ -102,7 +137,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { ok: false as const, error: "Email or password is incorrect." };
     }
     writeSessionEmail(key);
-    setUser(toSession(found));
+    const normalized = ensureProfileFields(found);
+    users[key] = normalized;
+    writeUsers(users);
+    setUser(toSession(normalized));
     return { ok: true as const };
   }, []);
 
@@ -121,6 +159,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       createdAt: new Date().toISOString(),
       onboardingComplete: false,
+      bio: "",
+      avatarDataUrl: null,
+      headerDataUrl: null,
     };
     users[key] = record;
     writeUsers(users);
@@ -141,10 +182,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const found = users[email];
     if (!found) return;
     found.onboardingComplete = true;
-    users[email] = found;
+    users[email] = ensureProfileFields(found);
     writeUsers(users);
-    setUser(toSession(found));
+    setUser(toSession(users[email]));
   }, [user?.email]);
+
+  const updateProfile = useCallback(
+    (patch: {
+      name?: string;
+      bio?: string;
+      avatarDataUrl?: string | null;
+      headerDataUrl?: string | null;
+    }) => {
+      const email = user?.email;
+      if (!email) return;
+      const users = readUsers();
+      const found = users[email];
+      if (!found) return;
+      if (patch.name !== undefined) {
+        found.name = patch.name.trim() || found.name;
+      }
+      if (patch.bio !== undefined) {
+        found.bio = patch.bio.slice(0, BIO_MAX);
+      }
+      if (patch.avatarDataUrl !== undefined) {
+        found.avatarDataUrl = patch.avatarDataUrl;
+      }
+      if (patch.headerDataUrl !== undefined) {
+        found.headerDataUrl = patch.headerDataUrl;
+      }
+      users[email] = ensureProfileFields(found);
+      writeUsers(users);
+      setUser(toSession(users[email]));
+    },
+    [user?.email],
+  );
 
   const value = useMemo(
     () => ({
@@ -154,8 +226,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signOut,
       completeOnboarding,
+      updateProfile,
     }),
-    [user, ready, signIn, signUp, signOut, completeOnboarding],
+    [user, ready, signIn, signUp, signOut, completeOnboarding, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

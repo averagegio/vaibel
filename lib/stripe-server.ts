@@ -8,7 +8,7 @@ export function getStripe(): Stripe {
     throw new Error("STRIPE_SECRET_KEY is not set");
   }
   if (!stripe) {
-    stripe = new Stripe(key);
+    stripe = new Stripe(key, { typescript: true });
   }
   return stripe;
 }

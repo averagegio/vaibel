@@ -16,6 +16,7 @@ export function AuthScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
+  const subscribedNotice = searchParams.get("notice") === "subscribed";
   const modeParam = searchParams.get("mode");
   const initialMode: Mode = modeParam === "signup" ? "signup" : "signin";
 
@@ -153,6 +154,13 @@ export function AuthScreen() {
 
           {error ? (
             <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-900">{error}</p>
+          ) : null}
+
+          {subscribedNotice ? (
+            <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+              Subscription confirmed — sign in with the <span className="font-semibold">same email</span> you used at
+              checkout to open the dashboard.
+            </p>
           ) : null}
 
           {mode === "signin" ? (

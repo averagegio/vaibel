@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { CONSUMER_PLANS } from "@/lib/consumer-pricing";
 import type { SubscriptionTier } from "@/lib/stripe-server";
 
 export function PricingCards() {
+  const { user } = useAuth();
   const [loadingTier, setLoadingTier] = useState<SubscriptionTier | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,14 +17,14 @@ export function PricingCards() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier, ...(user?.email ? { email: user.email } : {}) }),
       });
       const data = (await res.json().catch(() => null)) as { url?: string; error?: string } | null;
       if (!res.ok || !data?.url) {
         setError(data?.error ?? "Could not start checkout. Try again or contact support.");
         return;
       }
-      window.location.href = data.url;
+      window.location.assign(data.url);
     } catch {
       setError("Network error. Check your connection and retry.");
     } finally {

@@ -8,12 +8,11 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ session_id?: string; canceled?: string }>;
+  searchParams: Promise<{ canceled?: string }>;
 };
 
 export default async function PricingPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const showSuccess = typeof sp.session_id === "string" && sp.session_id.length > 0;
   const showCanceled = sp.canceled === "1";
 
   return (
@@ -27,20 +26,6 @@ export default async function PricingPage({ searchParams }: Props) {
           Pick a plan, pay securely with Stripe Checkout, and unlock installs across the hive.
         </p>
       </header>
-
-      {showSuccess ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          Payment session completed. Stripe will confirm the subscription — you can head to the{" "}
-          <Link href="/store" className="font-semibold underline">
-            store
-          </Link>{" "}
-          or{" "}
-          <Link href="/dashboard" className="font-semibold underline">
-            dashboard
-          </Link>
-          .
-        </div>
-      ) : null}
 
       {showCanceled ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">

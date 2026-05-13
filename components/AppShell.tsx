@@ -11,6 +11,7 @@ const nav = [
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About us" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/profile", label: "Profile" },
   { href: "/api-docs", label: "REST API" },
   { href: "/apply", label: "Apply for vibers" },
 ];
@@ -66,8 +67,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="px-3 py-4">
           {user ? (
             <div className="rounded-2xl border border-vaibee-border bg-vaibee-surface px-3 py-3">
-              <p className="truncate text-sm font-semibold text-vaibee-navy">{user.name}</p>
-              <p className="truncate text-xs text-vaibee-muted">{user.email}</p>
+              <div className="flex items-center gap-3">
+                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-vaibee-border bg-white">
+                  {user.avatarDataUrl ? (
+                    <Image
+                      src={user.avatarDataUrl}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      unoptimized
+                      sizes="44px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-[var(--vaibee-cyan-dim)] text-sm font-bold text-vaibee-navy">
+                      {user.name.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-vaibee-navy">{user.name}</p>
+                  <p className="truncate text-xs text-vaibee-muted">{user.email}</p>
+                </div>
+              </div>
               <div className="mt-3 flex gap-2">
                 <Link
                   href="/auth"
@@ -107,7 +128,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <nav className="flex-1 space-y-1 px-3 pb-6">
           {nav.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : item.href === "/dashboard/profile"
+                  ? pathname.startsWith("/dashboard/profile")
+                  : pathname === item.href;
             return (
               <Link
                 key={item.href}

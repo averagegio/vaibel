@@ -1,10 +1,12 @@
+import { HomeLandingBackdrop } from "@/components/HomeLandingBackdrop";
 import { MarketingChrome } from "@/components/MarketingChrome";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-white text-vaibee-navy">
+    <div className="relative min-h-dvh text-vaibee-navy">
+      <HomeLandingBackdrop />
       <MarketingChrome />
-      {children}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 }

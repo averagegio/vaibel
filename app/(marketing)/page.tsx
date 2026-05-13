@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { LANDING_HERO_BAND } from "@/lib/landing-hero";
 import { SignupCtaLink } from "@/components/SignupCtaLink";
 
 export const metadata: Metadata = {
@@ -11,8 +12,11 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <main>
-      <section className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:items-center lg:py-20">
+    <main className="relative">
+      {/* Scroll space so the fixed GIF band is visible; transparent so GIF shows through */}
+      <div className="w-full shrink-0" style={{ height: LANDING_HERO_BAND }} aria-hidden />
+
+      <section className="relative z-20 mx-auto grid max-w-6xl gap-10 bg-white px-4 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:grid-cols-2 lg:items-center lg:pt-12 lg:pb-20">
         <div className="max-w-xl space-y-6">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">vAIbee</p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -46,7 +50,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-black/[0.06] bg-[#f6f8fc] py-16 sm:py-20">
+      <section className="relative z-20 border-t border-black/[0.06] bg-[#f6f8fc] py-16 sm:py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
           <div className="order-2 space-y-4 lg:order-1">
             <h2 className="text-3xl font-semibold tracking-tight">Meet the hive</h2>

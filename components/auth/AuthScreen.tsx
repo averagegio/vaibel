@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -8,6 +7,9 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { signupHapticHover, signupHapticPress } from "@/components/SignupCtaLink";
 
 type Mode = "signin" | "signup";
+
+/** Matches fixed hero height — keep in sync with hero container */
+const HERO_H = "clamp(13rem, 36vh, 24rem)";
 
 export function AuthScreen() {
   const router = useRouter();
@@ -67,42 +69,35 @@ export function AuthScreen() {
   }
 
   return (
-    <div className="grid min-h-[calc(100dvh-3.75rem)] lg:grid-cols-2">
-      <div className="relative hidden min-h-0 lg:block">
-        <Image
-          src="/vaibel1.png"
+    <div className="relative min-h-[calc(100dvh-3.75rem)] w-full overflow-x-hidden bg-white">
+      {/* Full-bleed hero: fixed under marketing header (3.75rem) */}
+      <div
+        className="pointer-events-none fixed left-0 right-0 top-[3.75rem] z-10 overflow-hidden border-b border-white/10 shadow-[0_12px_40px_-12px_rgba(6,16,34,0.45)]"
+        style={{ height: HERO_H }}
+        aria-hidden
+      >
+        <img
+          src="/vaibeelanding2.gif"
           alt=""
-          fill
-          className="object-cover"
-          sizes="50vw"
-          priority
+          className="absolute inset-0 h-full w-full object-cover object-[center_42%] sm:object-center"
+          loading="eager"
+          decoding="async"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a1128]/80 via-[#0a1128]/25 to-transparent" />
-        <div className="absolute bottom-10 left-10 right-10 text-white">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-200/90">vAIbee</p>
-          <p className="mt-3 max-w-md text-2xl font-semibold leading-snug">
-            Agents by agents — plug in, ship vibes, repeat.
-          </p>
-        </div>
+        {/* Readability scrim + seamless fade into page background */}
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-[#050a14]/60 via-[#0a1128]/12 to-white"
+          aria-hidden
+        />
       </div>
 
-      <div className="flex flex-col justify-center bg-white px-4 py-10 sm:px-10 lg:px-14">
-        <div className="mx-auto w-full max-w-md">
-          <div className="mb-8 lg:hidden">
-            <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-[#f6f8fc]">
-              <Image
-                src="/vaibel1.png"
-                alt=""
-                width={720}
-                height={360}
-                className="h-40 w-full object-cover sm:h-48"
-                priority
-              />
-            </div>
-          </div>
-
+      {/* Content clears fixed hero; opaque base so scroll stays readable */}
+      <div
+        className="relative z-20 mx-auto flex w-full max-w-md flex-col px-4 pb-12 sm:px-6"
+        style={{ paddingTop: HERO_H }}
+      >
+        <div className="mt-5 rounded-3xl border border-black/[0.07] bg-white/95 p-6 shadow-[0_8px_40px_-12px_rgba(10,17,40,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-white/88 sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
-            <Link href="/" className="text-sm font-semibold text-vaibee-muted hover:text-vaibee-navy">
+            <Link href="/" className="text-sm font-semibold text-vaibee-navy/80 hover:text-vaibee-navy">
               ← Home
             </Link>
             <Link href="/store" className="text-sm font-semibold text-vaibee-cyan hover:underline">
@@ -110,7 +105,7 @@ export function AuthScreen() {
             </Link>
           </div>
 
-          <div className="flex rounded-full bg-[#f0f4fa] p-1 text-sm font-semibold">
+          <div className="flex rounded-full bg-[#eef2f8] p-1 text-sm font-semibold ring-1 ring-black/[0.04]">
             <button
               type="button"
               onClick={() => {
@@ -157,7 +152,7 @@ export function AuthScreen() {
                   type="email"
                   required
                   autoComplete="email"
-                  className="mt-1.5 w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                  className="mt-1.5 w-full rounded-2xl border border-black/12 bg-white px-3 py-3 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 placeholder:text-vaibee-muted/70 focus:border-vaibee-cyan focus:ring-2"
                   placeholder="you@vibecoders.dev"
                 />
               </label>
@@ -168,7 +163,7 @@ export function AuthScreen() {
                   type="password"
                   required
                   autoComplete="current-password"
-                  className="mt-1.5 w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                  className="mt-1.5 w-full rounded-2xl border border-black/12 bg-white px-3 py-3 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 placeholder:text-vaibee-muted/70 focus:border-vaibee-cyan focus:ring-2"
                   placeholder="••••••••"
                 />
               </label>
@@ -189,7 +184,7 @@ export function AuthScreen() {
                   type="text"
                   required
                   autoComplete="name"
-                  className="mt-1.5 w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                  className="mt-1.5 w-full rounded-2xl border border-black/12 bg-white px-3 py-3 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 placeholder:text-vaibee-muted/70 focus:border-vaibee-cyan focus:ring-2"
                   placeholder="Alex Vibe"
                 />
               </label>
@@ -200,7 +195,7 @@ export function AuthScreen() {
                   type="email"
                   required
                   autoComplete="email"
-                  className="mt-1.5 w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                  className="mt-1.5 w-full rounded-2xl border border-black/12 bg-white px-3 py-3 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 placeholder:text-vaibee-muted/70 focus:border-vaibee-cyan focus:ring-2"
                   placeholder="you@vibecoders.dev"
                 />
               </label>
@@ -212,7 +207,7 @@ export function AuthScreen() {
                   required
                   autoComplete="new-password"
                   minLength={6}
-                  className="mt-1.5 w-full rounded-2xl border border-black/10 bg-white px-3 py-3 text-sm outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                  className="mt-1.5 w-full rounded-2xl border border-black/12 bg-white px-3 py-3 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 placeholder:text-vaibee-muted/70 focus:border-vaibee-cyan focus:ring-2"
                   placeholder="At least 6 characters"
                 />
               </label>

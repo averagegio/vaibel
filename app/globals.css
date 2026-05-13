@@ -1,26 +1,94 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --vaibee-navy: #0a1128;
+  --vaibee-navy-soft: #121c3d;
+  --vaibee-cyan: #00d9ff;
+  --vaibee-cyan-dim: rgba(0, 217, 255, 0.15);
+  --vaibee-surface: #f6f8fc;
+  --vaibee-card: #ffffff;
+  --vaibee-border: #e2e8f0;
+  --vaibee-muted: #5b6578;
+  --background: var(--vaibee-surface);
+  --foreground: var(--vaibee-navy);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-vaibee-navy: var(--vaibee-navy);
+  --color-vaibee-navy-soft: var(--vaibee-navy-soft);
+  --color-vaibee-cyan: var(--vaibee-cyan);
+  --color-vaibee-surface: var(--vaibee-surface);
+  --color-vaibee-card: var(--vaibee-card);
+  --color-vaibee-border: var(--vaibee-border);
+  --color-vaibee-muted: var(--vaibee-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--vaibee-cyan-dim);
+  color: var(--vaibee-navy);
+}
+
+@keyframes vaibee-signup-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(0, 217, 255, 0.35),
+      0 0 14px rgba(0, 217, 255, 0.22),
+      0 0 28px rgba(0, 217, 255, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(0, 217, 255, 0.65),
+      0 0 22px rgba(0, 217, 255, 0.45),
+      0 0 44px rgba(0, 217, 255, 0.28),
+      0 0 72px rgba(0, 217, 255, 0.14);
+  }
+}
+
+.signup-cta {
+  color: #000000;
+  font-weight: 600;
+  background: linear-gradient(180deg, #ffffff 0%, #eefbff 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  animation: vaibee-signup-glow 2.4s ease-in-out infinite;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.5, 0.64, 1),
+    filter 0.2s ease;
+  will-change: transform, box-shadow;
+}
+
+.signup-cta:hover {
+  transform: scale(1.045) translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.signup-cta:active {
+  transform: scale(0.97) translateY(0);
+  filter: brightness(0.98);
+  transition-duration: 0.08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signup-cta {
+    animation: none;
+    box-shadow:
+      0 0 0 1px rgba(0, 217, 255, 0.4),
+      0 0 16px rgba(0, 217, 255, 0.25);
+  }
+
+  .signup-cta:hover,
+  .signup-cta:active {
+    transform: none;
+    filter: none;
+  }
 }

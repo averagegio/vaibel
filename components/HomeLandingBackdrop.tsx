@@ -1,28 +1,37 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { LANDING_HERO_BAND } from "@/lib/landing-hero";
+import { isMarketingHeroRoute, LANDING_HERO_BAND_CLASS } from "@/lib/landing-hero";
 
 /**
- * Top-of-viewport GIF bleed for `/` only: ~upper third of the viewport, fixed under the nav.
- * No gradient overlay. Content below scrolls over solid white (see landing page).
+ * Top GIF for `/` and `/store`: tall band behind the floating nav; soft gradient ends in white on `/` and `--vaibee-surface` on `/store`.
  */
 export function HomeLandingBackdrop() {
   const pathname = usePathname();
-  if (pathname !== "/") return null;
+  if (!isMarketingHeroRoute(pathname)) return null;
+
+  const fadeBottom = pathname === "/" ? "#ffffff" : "var(--vaibee-surface)";
 
   return (
     <div
-      className="pointer-events-none fixed left-0 right-0 top-[3.75rem] z-0 overflow-hidden border-b border-black/20 shadow-[inset_0_-1px_0_rgba(255,255,255,0.06)]"
-      style={{ height: LANDING_HERO_BAND }}
+      className={`pointer-events-none fixed left-0 right-0 top-0 z-0 overflow-hidden ${LANDING_HERO_BAND_CLASS}`}
       aria-hidden
     >
-      <img
-        src="/vaibeestatic1.gif"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover object-[center_35%] sm:object-center"
-        loading="eager"
-        decoding="async"
+      <div className="absolute inset-0">
+        <img
+          src="/vaibeestatic1.gif"
+          alt=""
+          className="h-full w-full object-cover object-[center_28%] sm:object-center"
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(180deg, transparent 0%, transparent 66%, rgba(255,255,255,0.02) 82%, rgba(255,255,255,0.08) 94%, ${fadeBottom} 100%)`,
+        }}
+        aria-hidden
       />
     </div>
   );

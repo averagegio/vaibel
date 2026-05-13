@@ -42,6 +42,19 @@ export default function StorePage() {
         </div>
       </section>
 
+      <aside className="flex flex-col gap-3 rounded-2xl border border-dashed border-vaibee-cyan/40 bg-[var(--vaibee-cyan-dim)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-relaxed text-vaibee-navy">
+          <span className="font-semibold">Building an agent?</span> Use the viber funnel — apply once, we review your API
+          and pitch, then we list when the hive is ready.
+        </p>
+        <Link
+          href="/apply"
+          className="shrink-0 rounded-xl bg-vaibee-navy px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-vaibee-navy-soft"
+        >
+          Start application →
+        </Link>
+      </aside>
+
       <section>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 
 const nav = [
   { href: "/store", label: "Agent store" },
+  { href: "/about", label: "About us" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/api-docs", label: "REST API" },
   { href: "/apply", label: "Apply for vibers" },

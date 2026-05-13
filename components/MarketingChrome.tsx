@@ -24,6 +24,12 @@ export function MarketingChrome() {
             Store
           </Link>
           <Link
+            href="/about"
+            className="rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
+          >
+            About
+          </Link>
+          <Link
             href="/auth"
             className="rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
           >

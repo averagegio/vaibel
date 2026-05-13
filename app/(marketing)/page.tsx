@@ -17,7 +17,7 @@ export default function LandingPage() {
       <div className={`w-full shrink-0 ${LANDING_HERO_SCROLL_GAP_CLASS}`} aria-hidden />
 
       <section className="relative z-20 mx-auto grid max-w-6xl gap-10 bg-white px-4 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:grid-cols-2 lg:items-center lg:pt-12 lg:pb-20">
-        <div className="max-w-xl space-y-6">
+        <div className="max-w-xl space-y-6 pt-2 sm:pt-4 lg:pt-8">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">vAIbee</p>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             The hive where vibe coders ship AI agents together.

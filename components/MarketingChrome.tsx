@@ -3,8 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { isMarketingHeroRoute } from "@/lib/landing-hero";
 import { SignupCtaLink } from "@/components/SignupCtaLink";
+
+/** Pixels scrolled past top before hero nav hides (avoids flicker on tiny moves). */
+const HERO_NAV_HIDE_AFTER_SCROLL_PX = 40;
 
 /** Marketing hero routes: GIF reads through the pill; solid white pill on hover or focus-within */
 const heroNavLink =
@@ -13,6 +17,20 @@ const heroNavLink =
 export function MarketingChrome() {
   const pathname = usePathname();
   const isFloatingHero = isMarketingHeroRoute(pathname);
+  const [heroNavPinned, setHeroNavPinned] = useState(true);
+
+  useEffect(() => {
+    if (!isFloatingHero) {
+      setHeroNavPinned(true);
+      return;
+    }
+    const onScroll = () => {
+      setHeroNavPinned(window.scrollY < HERO_NAV_HIDE_AFTER_SCROLL_PX);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isFloatingHero, pathname]);
 
   const logo = (
     <Link href="/" className="flex shrink-0 items-center py-2 pr-2">
@@ -50,32 +68,45 @@ export function MarketingChrome() {
     </nav>
   );
 
-  return (
-    <header
-      className={[
-        "sticky top-0 z-30",
-        isFloatingHero ? "border-0 bg-transparent pt-3 sm:pt-4" : "border-b border-black/[0.06] bg-white",
-      ].join(" ")}
-    >
-      {isFloatingHero ? (
-        <div className="mx-auto max-w-6xl px-3 sm:px-6">
-          <div
-            className={[
-              "group/header flex min-h-[3.75rem] w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-transparent bg-transparent px-2 py-1 shadow-none transition-all duration-300 ease-out sm:flex-nowrap sm:px-3",
-              "hover:border-black/[0.06] hover:bg-white hover:shadow-md",
-              "focus-within:border-black/[0.06] focus-within:bg-white focus-within:shadow-md",
-            ].join(" ")}
-          >
-            {logo}
-            {nav}
+  if (isFloatingHero) {
+    return (
+      <>
+        <div
+          className={[
+            "overflow-hidden transition-[height] duration-300 ease-out",
+            heroNavPinned ? "h-[5rem] sm:h-[5.25rem]" : "h-0",
+          ].join(" ")}
+          aria-hidden
+        />
+        <header
+          className={[
+            "fixed left-0 right-0 top-0 z-30 border-0 bg-transparent pt-3 transition-[transform,opacity] duration-300 ease-out sm:pt-4",
+            heroNavPinned ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[calc(100%+0.5rem)] opacity-0",
+          ].join(" ")}
+        >
+          <div className="mx-auto max-w-6xl px-3 sm:px-6">
+            <div
+              className={[
+                "group/header flex min-h-[3.75rem] w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-transparent bg-transparent px-2 py-1 shadow-none transition-all duration-300 ease-out sm:flex-nowrap sm:px-3",
+                "hover:border-black/[0.06] hover:bg-white hover:shadow-md",
+                "focus-within:border-black/[0.06] focus-within:bg-white focus-within:shadow-md",
+              ].join(" ")}
+            >
+              {logo}
+              {nav}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          {logo}
-          {nav}
-        </div>
-      )}
+        </header>
+      </>
+    );
+  }
+
+  return (
+    <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-white">
+      <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        {logo}
+        {nav}
+      </div>
     </header>
   );
 }

@@ -32,18 +32,33 @@ export function MarketingChrome() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isFloatingHero, pathname]);
 
-  const logo = (
+  const defaultLogo = (
     <Link href="/" className="flex shrink-0 items-center py-2 pr-2">
       <Image
-        src="/vaibee-header.png"
+        src="/vaibeelogos.png"
         alt="vAIbee"
-        width={200}
-        height={48}
+        width={160}
+        height={88}
         priority
-        className={[
-          "h-9 w-auto max-w-[min(200px,52vw)] object-contain object-left transition-[drop-shadow] duration-300",
-          isFloatingHero ? "drop-shadow-[0_2px_10px_rgba(0,0,0,0.65)] group-hover/header:drop-shadow-none" : "",
-        ].join(" ")}
+        className="h-9 w-auto max-w-[min(200px,52vw)] bg-transparent object-contain object-left"
+      />
+    </Link>
+  );
+
+  /** Home link as a compact icon-style control inside the hero pill (same box as nav links). */
+  const heroLogoIcon = (
+    <Link
+      href="/"
+      aria-label="vAIbee home"
+      className="inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl border border-white/35 bg-white/10 px-2 outline-none transition hover:bg-white/18 focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent group-hover/header:border-black/[0.08] group-hover/header:bg-[#eef2f8] group-hover/header:shadow-sm group-focus-within/header:border-black/[0.08] group-focus-within/header:bg-[#eef2f8] group-hover/header:focus-visible:ring-vaibee-navy/35 group-hover/header:focus-visible:ring-offset-white"
+    >
+      <Image
+        src="/vaibeelogos.png"
+        alt=""
+        width={120}
+        height={66}
+        priority
+        className="h-7 w-auto max-w-[4.25rem] bg-transparent object-contain object-center drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)] transition-[drop-shadow] duration-300 group-hover/header:drop-shadow-none"
       />
     </Link>
   );
@@ -92,7 +107,7 @@ export function MarketingChrome() {
                 "focus-within:border-black/[0.06] focus-within:bg-white focus-within:shadow-md",
               ].join(" ")}
             >
-              {logo}
+              {heroLogoIcon}
               {nav}
             </div>
           </div>
@@ -104,7 +119,7 @@ export function MarketingChrome() {
   return (
     <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-white">
       <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        {logo}
+        {defaultLogo}
         {nav}
       </div>
     </header>

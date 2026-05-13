@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -97,11 +98,22 @@ export function AuthScreen() {
       >
         <div className="mt-5 rounded-3xl border border-black/[0.07] bg-white/95 p-6 shadow-[0_8px_40px_-12px_rgba(10,17,40,0.12)] backdrop-blur-md supports-[backdrop-filter]:bg-white/88 sm:p-8">
           <div className="mb-6 flex items-center justify-between gap-4">
-            <Link href="/" className="text-sm font-semibold text-vaibee-navy/80 hover:text-vaibee-navy">
-              ← Home
-            </Link>
             <Link href="/store" className="text-sm font-semibold text-vaibee-cyan hover:underline">
               Store
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex shrink-0 border-0 bg-transparent p-0 shadow-none outline-none ring-0 transition-opacity hover:opacity-90 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-vaibee-cyan/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              aria-label="Home"
+            >
+              <Image
+                src="/vaibeelogos.png"
+                alt="vAIbee"
+                width={140}
+                height={72}
+                className="h-10 w-auto max-w-[min(140px,42vw)] object-contain object-right"
+                priority
+              />
             </Link>
           </div>
 

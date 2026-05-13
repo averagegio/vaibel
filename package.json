@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "strip-logo-bg": "node scripts/strip-logo-bg.mjs"
   },
   "dependencies": {
     "next": "16.2.6",
@@ -15,6 +16,7 @@
     "stripe": "^17.7.0"
   },
   "devDependencies": {
+    "@imgly/background-removal-node": "^1.4.5",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { HostedByMarquee } from "@/components/HostedByMarquee";
+import { LandingThemeShell } from "@/components/landing/LandingThemeShell";
 import { LANDING_HERO_SCROLL_GAP_CLASS } from "@/lib/landing-hero";
 import { SignupCtaLink } from "@/components/SignupCtaLink";
 
@@ -13,69 +15,131 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <main className="relative">
-      {/* Scroll space so the fixed GIF band is visible; transparent so GIF shows through */}
       <div className={`w-full shrink-0 ${LANDING_HERO_SCROLL_GAP_CLASS}`} aria-hidden />
 
-      <section className="relative z-20 mx-auto grid max-w-6xl gap-10 bg-white px-4 pb-14 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:grid-cols-2 lg:items-center lg:pt-12 lg:pb-20">
-        <div className="max-w-xl space-y-6 pt-2 sm:pt-4 lg:pt-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">vAIbee</p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            The hive where vibe coders ship AI agents together.
-          </h1>
-          <p className="text-lg leading-relaxed text-vaibee-muted">
-            Sign up, wire your workspace, and plug agents into your flow with a calm JSON API — built for builders who
-            move fast and keep it human.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <SignupCtaLink href="/auth?mode=signup">Create account</SignupCtaLink>
-            <Link
-              href="/store"
-              className="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-semibold text-vaibee-navy transition hover:border-vaibee-cyan/40"
+      <LandingThemeShell>
+        <section className="relative z-20 w-full bg-[var(--lp-bg)]">
+          <div className="mx-auto w-full max-w-[min(100%,88rem)] px-4 pb-16 pt-0 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
+            <div
+              className="overflow-hidden rounded-2xl border border-solid"
+              style={{
+                backgroundColor: "var(--lp-sheet)",
+                borderColor: "var(--lp-sheet-border)",
+                boxShadow: "var(--lp-sheet-shadow)",
+              }}
             >
-              Browse the store
-            </Link>
+              <HostedByMarquee />
+              <div className="grid gap-10 border-t border-solid px-5 py-10 sm:gap-12 sm:px-8 sm:py-12 lg:grid-cols-2 lg:items-center lg:px-10 lg:py-14" style={{ borderColor: "var(--lp-marquee-band-border)" }}>
+                <div className="max-w-xl space-y-6 pt-1 sm:pt-2 lg:pt-4" style={{ color: "var(--lp-text)" }}>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">vAIbee</p>
+                  <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">The hive where vibe coders ship AI agents together.</h1>
+                  <p className="text-lg leading-relaxed" style={{ color: "var(--lp-muted)" }}>
+                    Sign up, wire your workspace, and plug agents into your flow with a calm JSON API — built for builders who
+                    move fast and keep it human.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <SignupCtaLink href="/auth?mode=signup">Create account</SignupCtaLink>
+                    <Link
+                      href="/store"
+                      className="inline-flex items-center justify-center rounded-full border border-solid px-6 py-3 text-sm font-semibold transition hover:border-vaibee-cyan/40"
+                      style={{
+                        borderColor: "var(--lp-sheet-border)",
+                        backgroundColor: "var(--lp-sheet)",
+                        color: "var(--lp-text)",
+                      }}
+                    >
+                      Browse the store
+                    </Link>
+                  </div>
+                </div>
+                <div className="relative flex justify-center lg:justify-end">
+                  <div
+                    className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-solid shadow-sm"
+                    style={{ backgroundColor: "var(--lp-well)", borderColor: "var(--lp-well-border)" }}
+                  >
+                    <Image
+                      src="/vaibel1.png"
+                      alt="vAIbee product visual"
+                      width={900}
+                      height={700}
+                      className="h-auto w-full object-cover"
+                      priority
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="relative flex justify-center lg:justify-end">
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-black/[0.06] bg-[#f6f8fc] shadow-sm">
-            <Image
-              src="/vaibel1.png"
-              alt="vAIbee product visual"
-              width={900}
-              height={700}
-              className="h-auto w-full object-cover"
-              priority
-            />
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="relative z-20 border-t border-black/[0.06] bg-[#f6f8fc] py-16 sm:py-20">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
-          <div className="order-2 space-y-4 lg:order-1">
-            <h2 className="text-3xl font-semibold tracking-tight">Meet the hive</h2>
-            <p className="text-base leading-relaxed text-vaibee-muted">
-              Your landing strip for agents by agents — curated listings, approachable REST, and a dashboard that
-              greets first-timers and power users differently so nobody feels lost.
-            </p>
-            <Link
-              href="/auth"
-              className="inline-flex text-sm font-semibold text-vaibee-cyan hover:underline"
+        <section
+          className="relative z-20 border-t border-solid py-14 sm:py-20"
+          style={{
+            background: "var(--lp-crypto-bg)",
+            borderColor: "var(--lp-secondary-border)",
+          }}
+        >
+          <div className="mx-auto grid max-w-[min(100%,88rem)] items-center gap-10 px-4 sm:gap-12 sm:px-8 lg:grid-cols-2 lg:px-12">
+            <div
+              className="relative order-2 overflow-hidden rounded-2xl border border-solid shadow-sm lg:order-1"
+              style={{ borderColor: "var(--lp-crypto-border)" }}
             >
-              Already vibing? Log in →
-            </Link>
+              <Image
+                src="/vaibeecrypto.png"
+                alt="vAIbee crypto and finance lane — orbiting markets and chain icons"
+                width={1400}
+                height={787}
+                className="h-auto w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+            <div className="order-1 space-y-5 lg:order-2" style={{ color: "var(--lp-text)" }}>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">Crypto &amp; finance</p>
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Agents for markets, custody, and on-chain workflows.</h2>
+              <p className="text-base leading-relaxed sm:text-lg" style={{ color: "var(--lp-muted)" }}>
+                Listings tuned for desks that live in basis points and block space — with the same install-and-API story as
+                the rest of the hive.
+              </p>
+              <Link
+                href="/finance"
+                className="inline-flex items-center justify-center rounded-full bg-vaibee-navy px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-vaibee-navy-soft"
+              >
+                Learn more
+              </Link>
+            </div>
           </div>
-          <div className="order-1 overflow-hidden rounded-3xl border border-black/[0.06] bg-white shadow-sm lg:order-2">
-            <Image
-              src="/vaibee1.png"
-              alt="vAIbee wordmark and bee mascot"
-              width={900}
-              height={520}
-              className="h-auto w-full object-contain p-6 sm:p-10"
-            />
+        </section>
+
+        <section
+          className="relative z-20 border-t border-solid py-16 sm:py-20"
+          style={{ backgroundColor: "var(--lp-secondary)", borderColor: "var(--lp-secondary-border)" }}
+        >
+          <div className="mx-auto grid max-w-[min(100%,88rem)] items-center gap-12 px-4 sm:px-8 lg:grid-cols-2 lg:px-12">
+            <div className="order-2 space-y-4 lg:order-1" style={{ color: "var(--lp-text)" }}>
+              <h2 className="text-3xl font-semibold tracking-tight">Meet the hive</h2>
+              <p className="text-base leading-relaxed" style={{ color: "var(--lp-muted)" }}>
+                Your landing strip for agents by agents — curated listings, approachable REST, and a dashboard that greets
+                first-timers and power users differently so nobody feels lost.
+              </p>
+              <Link href="/auth" className="inline-flex text-sm font-semibold text-vaibee-cyan hover:underline">
+                Already vibing? Log in →
+              </Link>
+            </div>
+            <div
+              className="order-1 overflow-hidden rounded-3xl border border-solid shadow-sm lg:order-2"
+              style={{ backgroundColor: "var(--lp-sheet)", borderColor: "var(--lp-well-border)" }}
+            >
+              <Image
+                src="/vaibee1.png"
+                alt="vAIbee wordmark and bee mascot"
+                width={900}
+                height={520}
+                className="h-auto w-full object-contain p-6 sm:p-10"
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </LandingThemeShell>
     </main>
   );
 }

@@ -91,4 +91,77 @@ body {
     transform: none;
     filter: none;
   }
+
+  .landing-marquee-scroll {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.5rem;
+    width: 100%;
+    max-width: 72rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Landing: infinite horizontal ticker (duplicate track; move -50% for seamless loop) */
+@keyframes landing-marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.landing-marquee {
+  overflow: hidden;
+}
+
+.landing-marquee-scroll {
+  animation: landing-marquee-scroll 55s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-marquee-strip-duplicate {
+    display: none;
+  }
+}
+
+/* —— Landing home: light/dark theme (scoped under .landing-theme-root) —— */
+.landing-theme-root {
+  --lp-bg: #f6f8fc;
+  --lp-text: #0a1128;
+  --lp-muted: #5b6578;
+  --lp-sheet: #ffffff;
+  --lp-sheet-border: rgba(10, 17, 40, 0.1);
+  --lp-sheet-ring: rgba(0, 0, 0, 0.04);
+  --lp-sheet-shadow: 0 16px 48px -28px rgba(10, 17, 40, 0.14);
+  --lp-well: #f6f8fc;
+  --lp-well-border: rgba(0, 0, 0, 0.06);
+  --lp-marquee-band: #f8fafc;
+  --lp-marquee-band-border: rgba(0, 0, 0, 0.06);
+  --lp-secondary: #f6f8fc;
+  --lp-secondary-border: rgba(0, 0, 0, 0.06);
+  --lp-crypto-bg: linear-gradient(165deg, #eef6ff 0%, #e4f0fb 45%, #dcecf8 100%);
+  --lp-crypto-border: rgba(10, 17, 40, 0.08);
+}
+
+.landing-theme-root[data-landing-theme="dark"] {
+  --lp-bg: #000000;
+  --lp-text: #f4f4f5;
+  --lp-muted: #a1a1aa;
+  --lp-sheet: #0a0a0a;
+  --lp-sheet-border: rgba(255, 255, 255, 0.08);
+  --lp-sheet-ring: rgba(255, 255, 255, 0.04);
+  --lp-sheet-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.85);
+  --lp-well: #141414;
+  --lp-well-border: rgba(255, 255, 255, 0.07);
+  --lp-marquee-band: #0f0f0f;
+  --lp-marquee-band-border: rgba(255, 255, 255, 0.06);
+  --lp-secondary: #030303;
+  --lp-secondary-border: rgba(255, 255, 255, 0.06);
+  --lp-crypto-bg: linear-gradient(165deg, #101010 0%, #080808 50%, #000000 100%);
+  --lp-crypto-border: rgba(255, 255, 255, 0.08);
 }

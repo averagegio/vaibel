@@ -149,7 +149,7 @@ export function AuthScreen() {
 
           <h1 className="mt-8 text-2xl font-semibold tracking-tight text-vaibee-navy">{heading}</h1>
           <p className="mt-2 text-sm text-vaibee-muted">
-            Demo auth stores accounts in your browser only — swap for a real provider when you wire production.
+            Sign in or create an account to manage your workspace, profile, and billing from the dashboard.
           </p>
 
           {error ? (
@@ -244,7 +244,7 @@ export function AuthScreen() {
           )}
 
           <p className="mt-8 text-center text-xs text-vaibee-muted">
-            By continuing you agree to vibe responsibly. This is a demo experience.
+            By continuing you agree to vibe responsibly, and to keep your login information secure.
           </p>
         </div>
       </div>

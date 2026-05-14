@@ -5,6 +5,81 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string };
 
+const DOCK_OFFSET_KEY = "vaibee-dock-offset-v1";
+
+function clampDockOffset(x: number, y: number) {
+  if (typeof window === "undefined") return { x, y };
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const maxX = Math.max(48, vw * 0.42);
+  const maxYUp = Math.max(80, vh * 0.52);
+  return {
+    x: Math.max(-maxX, Math.min(maxX, x)),
+    y: Math.max(-maxYUp, Math.min(72, y)),
+  };
+}
+
+function readStoredOffset(): { x: number; y: number } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DOCK_OFFSET_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as unknown;
+    if (!p || typeof p !== "object") return null;
+    const x = Number((p as { x?: unknown }).x);
+    const y = Number((p as { y?: unknown }).y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return clampDockOffset(x, y);
+  } catch {
+    return null;
+  }
+}
+
+/** Grip control: drag to reposition the dock (pointer + touch). */
+function DockDragHandle(props: {
+  label: string;
+  variant?: "navy" | "light";
+  className?: string;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp: (e: React.PointerEvent) => void;
+  onPointerCancel: (e: React.PointerEvent) => void;
+}) {
+  const v = props.variant ?? "light";
+  const surface =
+    v === "navy"
+      ? "text-white/70 hover:bg-white/10 hover:text-white"
+      : "text-vaibee-muted hover:bg-black/[0.05] hover:text-vaibee-navy";
+  return (
+    <button
+      type="button"
+      tabIndex={0}
+      aria-label={props.label}
+      title={props.label}
+      onPointerDown={props.onPointerDown}
+      onPointerMove={props.onPointerMove}
+      onPointerUp={props.onPointerUp}
+      onPointerCancel={props.onPointerCancel}
+      className={[
+        "touch-none mb-0.5 flex h-10 w-9 shrink-0 cursor-grab items-center justify-center rounded-xl transition active:cursor-grabbing sm:w-10",
+        surface,
+        props.className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <circle cx="9" cy="8" r="1.35" />
+        <circle cx="15" cy="8" r="1.35" />
+        <circle cx="9" cy="12" r="1.35" />
+        <circle cx="15" cy="12" r="1.35" />
+        <circle cx="9" cy="16" r="1.35" />
+        <circle cx="15" cy="16" r="1.35" />
+      </svg>
+    </button>
+  );
+}
+
 export function VaibeeChatDock() {
   /** FAB vs expanded composer */
   const [dockOpen, setDockOpen] = useState(false);
@@ -15,6 +90,72 @@ export function VaibeeChatDock() {
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const offsetRef = useRef(offset);
+  const dragRef = useRef<{ pointerId: number; ox: number; oy: number; bx: number; by: number } | null>(null);
+
+  useEffect(() => {
+    offsetRef.current = offset;
+  }, [offset]);
+
+  useEffect(() => {
+    const s = readStoredOffset();
+    if (s) setOffset(s);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setOffset((o) => clampDockOffset(o.x, o.y));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const persistOffset = useCallback((o: { x: number; y: number }) => {
+    try {
+      window.localStorage.setItem(DOCK_OFFSET_KEY, JSON.stringify(o));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const onDragPointerDown = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const o = offsetRef.current;
+    dragRef.current = {
+      pointerId: e.pointerId,
+      ox: e.clientX,
+      oy: e.clientY,
+      bx: o.x,
+      by: o.y,
+    };
+  }, []);
+
+  const onDragPointerMove = useCallback((e: React.PointerEvent) => {
+    const d = dragRef.current;
+    if (!d || e.pointerId !== d.pointerId) return;
+    const nx = d.bx + (e.clientX - d.ox);
+    const ny = d.by + (e.clientY - d.oy);
+    setOffset(clampDockOffset(nx, ny));
+  }, []);
+
+  const onDragPointerEnd = useCallback(
+    (e: React.PointerEvent) => {
+      const d = dragRef.current;
+      if (!d || e.pointerId !== d.pointerId) return;
+      dragRef.current = null;
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch {
+        /* already released */
+      }
+      setOffset((o) => {
+        const c = clampDockOffset(o.x, o.y);
+        persistOffset(c);
+        return c;
+      });
+    },
+    [persistOffset],
+  );
 
   const scrollToBottom = useCallback(() => {
     const el = listRef.current;
@@ -97,25 +238,43 @@ export function VaibeeChatDock() {
     }
   }
 
+  const dragHandleProps = {
+    onPointerDown: onDragPointerDown,
+    onPointerMove: onDragPointerMove,
+    onPointerUp: onDragPointerEnd,
+    onPointerCancel: onDragPointerEnd,
+  } as const;
+
   return (
     <div
       className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-4"
       aria-live="polite"
     >
-      <div className="pointer-events-auto flex w-full max-w-3xl flex-col items-center gap-2">
+      <div
+        className="pointer-events-auto flex w-full max-w-3xl flex-col items-center gap-2 will-change-transform"
+        style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }}
+      >
         {!dockOpen ? (
-          <button
-            type="button"
-            onClick={openDock}
-            className="flex items-center gap-2.5 rounded-full border border-black/[0.08] bg-vaibee-navy px-4 py-2.5 pr-5 text-left text-white shadow-[0_10px_40px_-12px_rgba(10,17,40,0.55)] transition hover:bg-vaibee-navy-soft active:scale-[0.98] sm:px-5 sm:py-3"
-            aria-expanded={false}
-            aria-controls="vaibee-composer"
-          >
-            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 ring-1 ring-white/20">
-              <Image src="/vai-bee.png" alt="Vaibee" width={36} height={36} className="object-contain p-0.5" unoptimized />
-            </span>
-            <span className="text-sm font-semibold tracking-wide">Ask Vaibee</span>
-          </button>
+          <div className="flex max-w-full items-stretch overflow-hidden rounded-full border border-black/[0.08] bg-vaibee-navy text-white shadow-[0_10px_40px_-12px_rgba(10,17,40,0.55)]">
+            <DockDragHandle
+              variant="navy"
+              label="Drag to move Ask Vaibee"
+              className="mb-0 rounded-none rounded-l-[999px] py-2.5 sm:py-3"
+              {...dragHandleProps}
+            />
+            <button
+              type="button"
+              onClick={openDock}
+              className="flex min-w-0 flex-1 items-center gap-2.5 py-2.5 pr-5 pl-2 text-left transition hover:bg-white/5 active:scale-[0.98] sm:px-5 sm:py-3"
+              aria-expanded={false}
+              aria-controls="vaibee-composer"
+            >
+              <span className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 ring-1 ring-white/20">
+                <Image src="/vai-bee.png" alt="Vaibee" width={36} height={36} className="object-contain p-0.5" unoptimized />
+              </span>
+              <span className="text-sm font-semibold tracking-wide">Ask Vaibee</span>
+            </button>
+          </div>
         ) : (
           <div id="vaibee-composer" className="flex w-full flex-col gap-2">
             {transcriptOpen ? (
@@ -125,8 +284,14 @@ export function VaibeeChatDock() {
                 role="dialog"
                 aria-label="Vaibee conversation"
               >
-                <div className="flex items-center justify-between gap-3 border-b border-black/[0.06] px-3 py-2.5 sm:px-4 sm:py-3">
-                  <div className="flex min-w-0 items-center gap-2">
+                <div className="flex items-center gap-2 border-b border-black/[0.06] px-2 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+                  <DockDragHandle
+                    variant="light"
+                    label="Drag to move Vaibee"
+                    className="mb-0 h-9 w-9 shrink-0 sm:h-10 sm:w-10"
+                    {...dragHandleProps}
+                  />
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
                     <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-[var(--vaibee-cyan-dim)] ring-1 ring-black/[0.06] sm:h-9 sm:w-9">
                       <Image
                         src="/vai-bee.png"
@@ -145,7 +310,7 @@ export function VaibeeChatDock() {
                   <button
                     type="button"
                     onClick={() => setTranscriptOpen(false)}
-                    className="rounded-lg px-2 py-1 text-xs font-semibold text-vaibee-muted transition hover:bg-black/[0.04] hover:text-vaibee-navy"
+                    className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-vaibee-muted transition hover:bg-black/[0.04] hover:text-vaibee-navy"
                   >
                     Hide
                   </button>
@@ -153,8 +318,8 @@ export function VaibeeChatDock() {
                 <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3 sm:px-4">
                   {msgs.length === 0 ? (
                     <p className="text-sm leading-relaxed text-vaibee-muted">
-                      Send a message below — I will answer with the hive context. Tap the arrow to show or hide this
-                      thread, or close when you are done.
+                      Send a message below — I will answer with the hive context. Use the dotted grip on the left to move
+                      the whole dock. Tap the arrow to show or hide this thread, or close when you are done.
                     </p>
                   ) : (
                     msgs.map((msg) => (
@@ -181,6 +346,7 @@ export function VaibeeChatDock() {
             ) : null}
 
             <div className="flex w-full items-end gap-2 rounded-[1.35rem] border border-black/[0.09] bg-white/95 py-2 pl-2 pr-2 shadow-[0_12px_48px_-16px_rgba(10,17,40,0.35)] backdrop-blur-md supports-[backdrop-filter]:bg-white/92 sm:gap-2.5 sm:pl-2.5 sm:pr-3">
+              <DockDragHandle variant="light" label="Drag to move Vaibee" {...dragHandleProps} />
               <button
                 type="button"
                 onClick={closeDock}

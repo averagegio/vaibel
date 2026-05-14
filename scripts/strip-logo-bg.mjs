@@ -1,22 +1,28 @@
 /**
- * Remove background from a logo PNG → public/vaibeelogos.png
+ * Remove background from a logo PNG (writes PNG with alpha).
  *
  * Usage:
- *   npm run strip-logo-bg -- "C:\path\to\input.png"
+ *   npm run strip-logo-bg -- "public/vai bee.png" "public/vai-bee.png"
+ *   npm run strip-logo-bg -- "C:\path\to\input.png"              → public/vaibeelogos.png
  * Or drop a source file at public/vaibeelogos-source.png and run:
  *   npm run strip-logo-bg
  */
 import { writeFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, isAbsolute } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { removeBackground } from "@imgly/background-removal-node";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
-const outPath = join(root, "public", "vaibeelogos.png");
+const defaultOutPath = join(root, "public", "vaibeelogos.png");
 const defaultInProject = join(root, "public", "vaibeelogos-source.png");
 
-const inputPath = process.argv[2] ?? defaultInProject;
+function resolveAgainstRoot(p) {
+  return isAbsolute(p) ? p : join(root, p);
+}
+
+const inputPath = process.argv[2] ? resolveAgainstRoot(process.argv[2]) : defaultInProject;
+const outPath = process.argv[3] ? resolveAgainstRoot(process.argv[3]) : defaultOutPath;
 
 if (!existsSync(inputPath)) {
   console.error("Input not found:", inputPath);

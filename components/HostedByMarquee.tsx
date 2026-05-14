@@ -1,23 +1,18 @@
-/** Fictional host names for the landing ticker (replace with real partners when you have them). */
-const HOST_COMPANIES = [
-  "Northwind Labs",
-  "Cobalt Robotics",
-  "Blue Harbor",
-  "Kite Systems",
-  "Orbital Desk",
-  "Silverline AI",
-  "Patchwork Studio",
-  "Grain & Signal",
-  "Loft Analytics",
-  "Frame Nine",
-  "Harbor Circuit",
-  "Brightline Ops",
+/** Live agent sites hosted on the platform (marquee links open in a new tab). */
+const HOST_SITES: { href: string; label: string }[] = [
+  { href: "https://www.peaksees.com/", label: "peaksees" },
+  { href: "https://www.scriptids.com/", label: "Scriptids" },
+  { href: "https://www.verdansc.com/", label: "VERDANSC" },
+  { href: "https://www.bardty.com/", label: "Bardty" },
+  { href: "https://www.mechmaru.com/", label: "Maru Robotics" },
+  { href: "https://www.morgnow.com/", label: "morgnow" },
+  { href: "https://www.clankthat.com/", label: "ClankThat" },
 ];
 
 export function HostedByMarquee() {
   return (
     <div className="landing-marquee border-b border-solid" style={{ backgroundColor: "var(--lp-marquee-band)", borderColor: "var(--lp-marquee-band-border)" }}>
-      <p className="sr-only">Companies that have hosted on the platform</p>
+      <p className="sr-only">Agent sites and products on the platform</p>
       <div className="landing-marquee-scroll flex w-max">
         {[0, 1].map((dup) => (
           <div
@@ -28,14 +23,18 @@ export function HostedByMarquee() {
             ].join(" ")}
             aria-hidden={dup === 1}
           >
-            {HOST_COMPANIES.map((name) => (
-              <span
-                key={`${dup}-${name}`}
-                className="whitespace-nowrap text-[0.8125rem] font-semibold uppercase tracking-[0.18em] sm:text-sm"
+            {HOST_SITES.map((site) => (
+              <a
+                key={`${dup}-${site.href}`}
+                href={site.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                tabIndex={dup === 1 ? -1 : 0}
+                className="whitespace-nowrap text-[0.8125rem] font-semibold uppercase tracking-[0.18em] underline-offset-4 transition hover:opacity-90 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--lp-accent,#12a4b7)] sm:text-sm"
                 style={{ color: "var(--lp-muted)" }}
               >
-                {name}
-              </span>
+                {site.label}
+              </a>
             ))}
           </div>
         ))}

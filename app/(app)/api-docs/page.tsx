@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AGENTS } from "@/lib/agents";
+import { listPublishedAgents } from "@/lib/agents";
 
 export const metadata: Metadata = {
   title: "REST API",
   description: "Plug-and-play JSON API for listing agents and wiring installs.",
 };
 
+export const dynamic = "force-dynamic";
+
 const base = "/api/v1";
 
-export default function ApiDocsPage() {
+export default async function ApiDocsPage() {
+  const agents = await listPublishedAgents();
   return (
     <div className="mx-auto max-w-4xl">
       <p className="text-sm font-semibold uppercase tracking-wide text-vaibee-cyan">Developer surface</p>
@@ -57,15 +60,25 @@ export default function ApiDocsPage() {
         <section>
           <h2 className="text-lg font-semibold text-vaibee-navy">Agent slugs in this demo</h2>
           <ul className="mt-4 space-y-3">
-            {AGENTS.map((agent) => (
+            {agents.map((agent) => (
               <li key={agent.slug} id={`agent-${agent.slug}`} className="rounded-xl border border-vaibee-border bg-vaibee-card px-4 py-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="font-mono text-sm text-vaibee-navy">{agent.slug}</p>
-                  <Link className="text-xs font-semibold text-vaibee-cyan hover:underline" href={`${base}/agents/${agent.slug}`}>
-                    Open JSON
-                  </Link>
+                  <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1">
+                    <Link className="text-xs font-semibold text-vaibee-cyan hover:underline" href={`/store/${agent.slug}`}>
+                      Store listing
+                    </Link>
+                    <Link className="text-xs font-semibold text-vaibee-cyan hover:underline" href={`${base}/agents/${agent.slug}`}>
+                      Open JSON
+                    </Link>
+                  </div>
                 </div>
                 <p className="mt-1 text-sm text-vaibee-muted">{agent.name}</p>
+                {agent.agentApiUrl ? (
+                  <p className="mt-2 font-mono text-[11px] text-vaibee-muted break-all">
+                    Builder API: {agent.agentApiUrl}
+                  </p>
+                ) : null}
               </li>
             ))}
           </ul>

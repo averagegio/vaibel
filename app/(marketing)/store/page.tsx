@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AgentCard } from "@/components/AgentCard";
-import { AGENTS } from "@/lib/agents";
+import { listPublishedAgents } from "@/lib/agents";
 import { LANDING_HERO_SCROLL_GAP_CLASS } from "@/lib/landing-hero";
 
 export const metadata: Metadata = {
@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   description: "Browse plug-and-play AI agents for vibe coders.",
 };
 
-export default function StorePage() {
+export const dynamic = "force-dynamic";
+
+export default async function StorePage() {
+  const agents = await listPublishedAgents();
   return (
     <main className="relative">
       <div className={`w-full shrink-0 ${LANDING_HERO_SCROLL_GAP_CLASS}`} aria-hidden />
@@ -49,8 +52,8 @@ export default function StorePage() {
 
           <aside className="flex flex-col gap-3 rounded-2xl border border-dashed border-vaibee-cyan/40 bg-[var(--vaibee-cyan-dim)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm leading-relaxed text-vaibee-navy">
-              <span className="font-semibold">Building an agent?</span> Use the viber funnel — apply once, we review your
-              API and pitch, then we list when the hive is ready.
+              <span className="font-semibold">Building an agent?</span> Use the viber funnel — apply once; after review we
+              publish approved listings here automatically so they appear in the store and JSON API like seeded agents.
             </p>
             <Link
               href="/apply"
@@ -71,7 +74,7 @@ export default function StorePage() {
               </Link>
             </div>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {AGENTS.map((agent) => (
+              {agents.map((agent) => (
                 <AgentCard key={agent.slug} agent={agent} />
               ))}
             </div>

@@ -34,7 +34,7 @@ export const POST_APPLY_STEPS: FunnelStep[] = [
   {
     id: "list",
     title: "List on the store",
-    body: "Approved agents get a listing, slug, and JSON surface aligned with our /api/v1 pattern.",
+    body: "Once approved, your listing appears in the hive store and the public GET /api/v1/agents catalog — same slug-based JSON surface as curated agents.",
     owner: "vaibee",
   },
   {

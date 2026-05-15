@@ -7,9 +7,9 @@ import { AgentCard } from "@/components/AgentCard";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { DashboardProfileCard } from "@/components/dashboard/DashboardProfileCard";
 import { useBillingStatus } from "@/hooks/useBillingStatus";
-import { featuredAgents } from "@/lib/dashboard-featured";
+import type { AgentListing } from "@/lib/agents";
 
-export function DashboardView() {
+export function DashboardView({ featuredPicks }: { featuredPicks: AgentListing[] }) {
   const router = useRouter();
   const { user, ready, signOut, completeOnboarding } = useAuth();
   const billing = useBillingStatus(user?.email, ready);
@@ -85,7 +85,7 @@ export function DashboardView() {
   const planLabel = billing.tier
     ? `Active plan · ${billing.tier.charAt(0).toUpperCase()}${billing.tier.slice(1)}`
     : null;
-  const picks = featuredAgents(3);
+  const picks = featuredPicks;
 
   return (
     <div className="mx-auto max-w-5xl space-y-10">

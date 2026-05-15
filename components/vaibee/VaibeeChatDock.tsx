@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string };
 
@@ -81,6 +82,12 @@ function DockDragHandle(props: {
 }
 
 export function VaibeeChatDock() {
+  const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalEl(document.body);
+  }, []);
+
   /** FAB vs expanded composer */
   const [dockOpen, setDockOpen] = useState(false);
   /** Transcript sheet above composer */
@@ -245,13 +252,15 @@ export function VaibeeChatDock() {
     onPointerCancel: onDragPointerEnd,
   } as const;
 
-  return (
+  /** Portal root is `document.body` so `position:fixed` is always relative to the viewport (never a transformed/stacking ancestor inside the layout tree). */
+  const dockUi = (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-4"
+      className="pointer-events-none fixed inset-x-0 bottom-0 left-0 right-0 z-[100] flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 sm:px-4 sm:pb-4"
       aria-live="polite"
+      data-vaibee-chat-dock-root
     >
       <div
-        className="pointer-events-auto flex w-full max-w-3xl flex-col items-center gap-2 will-change-transform"
+        className="pointer-events-auto flex w-full max-w-3xl flex-col items-center gap-2"
         style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }}
       >
         {!dockOpen ? (
@@ -411,4 +420,7 @@ export function VaibeeChatDock() {
       </div>
     </div>
   );
+
+  if (!portalEl) return null;
+  return createPortal(dockUi, portalEl);
 }

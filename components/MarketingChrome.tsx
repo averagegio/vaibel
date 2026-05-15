@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { isMarketingHeroRoute } from "@/lib/landing-hero";
 import { SignupCtaLink } from "@/components/SignupCtaLink";
 
@@ -17,7 +18,12 @@ const heroNavLink =
 export function MarketingChrome() {
   const pathname = usePathname();
   const isFloatingHero = isMarketingHeroRoute(pathname);
+  const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
   const [heroNavPinned, setHeroNavPinned] = useState(true);
+
+  useEffect(() => {
+    setPortalEl(document.body);
+  }, []);
 
   useEffect(() => {
     if (!isFloatingHero) {
@@ -84,6 +90,29 @@ export function MarketingChrome() {
   );
 
   if (isFloatingHero) {
+    const heroHeader = (
+      <header
+        className={[
+          "fixed left-0 right-0 top-0 z-40 border-0 bg-transparent pt-3 transition-[transform,opacity] duration-300 ease-out sm:pt-4",
+          heroNavPinned ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[calc(100%+0.5rem)] opacity-0",
+        ].join(" ")}
+        data-marketing-hero-nav
+      >
+        <div className="mx-auto max-w-6xl px-3 sm:px-6">
+          <div
+            className={[
+              "group/header flex min-h-[3.75rem] w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-transparent bg-transparent px-2 py-1 shadow-none transition-all duration-300 ease-out sm:flex-nowrap sm:px-3",
+              "hover:border-black/[0.06] hover:bg-white hover:shadow-md",
+              "focus-within:border-black/[0.06] focus-within:bg-white focus-within:shadow-md",
+            ].join(" ")}
+          >
+            {heroLogoIcon}
+            {nav}
+          </div>
+        </div>
+      </header>
+    );
+
     return (
       <>
         <div
@@ -93,25 +122,7 @@ export function MarketingChrome() {
           ].join(" ")}
           aria-hidden
         />
-        <header
-          className={[
-            "fixed left-0 right-0 top-0 z-30 border-0 bg-transparent pt-3 transition-[transform,opacity] duration-300 ease-out sm:pt-4",
-            heroNavPinned ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[calc(100%+0.5rem)] opacity-0",
-          ].join(" ")}
-        >
-          <div className="mx-auto max-w-6xl px-3 sm:px-6">
-            <div
-              className={[
-                "group/header flex min-h-[3.75rem] w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl border border-transparent bg-transparent px-2 py-1 shadow-none transition-all duration-300 ease-out sm:flex-nowrap sm:px-3",
-                "hover:border-black/[0.06] hover:bg-white hover:shadow-md",
-                "focus-within:border-black/[0.06] focus-within:bg-white focus-within:shadow-md",
-              ].join(" ")}
-            >
-              {heroLogoIcon}
-              {nav}
-            </div>
-          </div>
-        </header>
+        {portalEl ? createPortal(heroHeader, portalEl) : null}
       </>
     );
   }

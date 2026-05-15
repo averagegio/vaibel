@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
-import { AGENTS } from "@/lib/agents";
+import { listPublishedAgents } from "@/lib/agents";
 
-export function GET() {
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  const agents = await listPublishedAgents();
   return NextResponse.json({
-    data: AGENTS,
+    data: agents,
     meta: {
       version: "2024-11-01",
-      count: AGENTS.length,
+      count: agents.length,
     },
   });
 }

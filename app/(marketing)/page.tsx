@@ -29,15 +29,17 @@ export default function LandingPage() {
               }}
             >
               <HostedByMarquee />
-              <div className="grid gap-10 border-t border-solid px-5 py-10 sm:gap-12 sm:px-8 sm:py-12 lg:grid-cols-2 lg:items-center lg:px-10 lg:py-14" style={{ borderColor: "var(--lp-marquee-band-border)" }}>
-                <div className="max-w-xl space-y-6 pt-1 sm:pt-2 lg:pt-4" style={{ color: "var(--lp-text)" }}>
+              {/* Hero: brand line + headline + CTAs only */}
+              <div
+                className="border-t border-solid px-5 py-10 text-center sm:px-8 sm:py-12 lg:px-10 lg:py-14"
+                style={{ borderColor: "var(--lp-marquee-band-border)" }}
+              >
+                <div className="mx-auto max-w-3xl space-y-6 sm:text-left" style={{ color: "var(--lp-text)" }}>
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">vAIbee</p>
-                  <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">The hive where vibe coders ship AI agents together.</h1>
-                  <p className="text-lg leading-relaxed" style={{ color: "var(--lp-muted)" }}>
-                    Sign up, wire your workspace, and plug agents into your flow with a calm JSON API — built for builders who
-                    move fast and keep it human.
-                  </p>
-                  <div className="flex flex-wrap gap-3">
+                  <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                    The hive where vibe coders ship AI agents together.
+                  </h1>
+                  <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
                     <SignupCtaLink href="/auth?mode=signup">Create account</SignupCtaLink>
                     <Link
                       href="/store"
@@ -52,19 +54,44 @@ export default function LandingPage() {
                     </Link>
                   </div>
                 </div>
-                <div className="relative flex justify-center lg:justify-end">
+              </div>
+
+              {/* Viable narrative + product visual */}
+              <div
+                className="grid gap-10 border-t border-solid px-5 py-10 sm:gap-12 sm:px-8 sm:py-12 lg:grid-cols-2 lg:items-center lg:px-10 lg:py-14"
+                style={{ borderColor: "var(--lp-marquee-band-border)" }}
+              >
+                <div className="relative order-2 flex justify-center lg:order-1 lg:justify-end">
                   <div
                     className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-solid shadow-sm"
                     style={{ backgroundColor: "var(--lp-well)", borderColor: "var(--lp-well-border)" }}
                   >
                     <Image
                       src="/vaibel1.png"
-                      alt="vAIbee product visual"
+                      alt="Vaibel — vibe coding is viable"
                       width={900}
                       height={700}
                       className="h-auto w-full object-cover"
                       priority
                     />
+                  </div>
+                </div>
+                <div className="order-1 space-y-5 pt-1 lg:order-2 lg:max-w-xl lg:pt-0" style={{ color: "var(--lp-text)" }}>
+                  <div className="space-y-2">
+                    <p className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">Viable</p>
+                    <p className="text-2xl font-semibold tracking-tight text-vaibee-navy/90 sm:text-3xl">
+                      Vibe coding is viable.
+                    </p>
+                  </div>
+                  <div className="space-y-4 text-base leading-relaxed sm:text-lg" style={{ color: "var(--lp-muted)" }}>
+                    <p>
+                      Gone are the days of the app store—today is the era of agents. Here at Vaibel we believe vibe coding
+                      agents are the future of enterprise and consumer interaction.
+                    </p>
+                    <p>
+                      The funnel is simple: browse the hive, install agents into your workspace, and plug them into your flow
+                      through a calm JSON API—built for builders who move fast and keep it human.
+                    </p>
                   </div>
                 </div>
               </div>

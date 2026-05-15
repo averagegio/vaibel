@@ -29,7 +29,7 @@ export default function LandingPage() {
               }}
             >
               <HostedByMarquee />
-              {/* Hero: brand line + headline + CTAs only */}
+              {/* Hero: brand line + headline + subtext + CTAs */}
               <div
                 className="border-t border-solid px-5 py-10 text-center sm:px-8 sm:py-12 lg:px-10 lg:py-14"
                 style={{ borderColor: "var(--lp-marquee-band-border)" }}
@@ -39,6 +39,10 @@ export default function LandingPage() {
                   <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
                     The hive where vibe coders ship AI agents together.
                   </h1>
+                  <p className="text-lg leading-relaxed" style={{ color: "var(--lp-muted)" }}>
+                    Sign up, wire your workspace, and plug agents into your flow with a calm JSON API — built for builders
+                    who move fast and keep it human.
+                  </p>
                   <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
                     <SignupCtaLink href="/auth?mode=signup">Create account</SignupCtaLink>
                     <Link
@@ -78,7 +82,9 @@ export default function LandingPage() {
                 </div>
                 <div className="order-1 space-y-5 pt-1 lg:order-2 lg:max-w-xl lg:pt-0" style={{ color: "var(--lp-text)" }}>
                   <div className="space-y-2">
-                    <p className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">Viable</p>
+                    <p className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+                      Viable<span className="text-vaibee-navy/70">:</span>
+                    </p>
                     <p className="text-2xl font-semibold tracking-tight text-vaibee-navy/90 sm:text-3xl">
                       Vibe coding is viable.
                     </p>
@@ -89,10 +95,17 @@ export default function LandingPage() {
                       agents are the future of enterprise and consumer interaction.
                     </p>
                     <p>
-                      The funnel is simple: browse the hive, install agents into your workspace, and plug them into your flow
-                      through a calm JSON API—built for builders who move fast and keep it human.
+                      The funnel is simple: discover agents that match real workflows, install them with clear provenance,
+                      then iterate from one shipped interaction to many—without every squad rebuilding its own storefront,
+                      contracts, and guardrails from scratch. The hive exists so experiments compound instead of resetting.
                     </p>
                   </div>
+                  <Link
+                    href="/about"
+                    className="inline-flex items-center justify-center rounded-full bg-vaibee-navy px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-vaibee-navy-soft"
+                  >
+                    Learn more
+                  </Link>
                 </div>
               </div>
             </div>

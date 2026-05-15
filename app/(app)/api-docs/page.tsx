@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ApiDocsHashScroller } from "@/components/ApiDocsHashScroller";
 import { listPublishedAgents } from "@/lib/agents";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default async function ApiDocsPage() {
   const agents = await listPublishedAgents();
   return (
     <div className="mx-auto max-w-4xl">
+      <ApiDocsHashScroller />
       <p className="text-sm font-semibold uppercase tracking-wide text-vaibee-cyan">Developer surface</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight text-vaibee-navy md:text-4xl">Approachable REST API</h1>
       <p className="mt-3 max-w-2xl text-base leading-relaxed text-vaibee-muted">
@@ -68,9 +70,14 @@ export default async function ApiDocsPage() {
                     <Link className="text-xs font-semibold text-vaibee-cyan hover:underline" href={`/store/${agent.slug}`}>
                       Store listing
                     </Link>
-                    <Link className="text-xs font-semibold text-vaibee-cyan hover:underline" href={`${base}/agents/${agent.slug}`}>
+                    <a
+                      className="text-xs font-semibold text-vaibee-cyan hover:underline"
+                      href={`${base}/agents/${agent.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Open JSON
-                    </Link>
+                    </a>
                   </div>
                 </div>
                 <p className="mt-1 text-sm text-vaibee-muted">{agent.name}</p>

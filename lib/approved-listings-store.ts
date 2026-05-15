@@ -46,14 +46,24 @@ async function appendApprovedListingToFile(entry: ApprovedListingStored): Promis
 
 export async function readApprovedListings(): Promise<ApprovedListingStored[]> {
   if (hasNeonDatabase()) {
-    return readApprovedListingsFromNeon();
+    try {
+      return await readApprovedListingsFromNeon();
+    } catch (err) {
+      console.error("[vaibel] agent_store_listings read failed — using seed catalog only. Did you run db/neon/002_agent_store_listings.sql?", err);
+      return [];
+    }
   }
   return readApprovedListingsFromFile();
 }
 
 export async function findApprovedListingBySlug(slug: string): Promise<ApprovedListingStored | null> {
   if (hasNeonDatabase()) {
-    return findApprovedListingBySlugInNeon(slug);
+    try {
+      return await findApprovedListingBySlugInNeon(slug);
+    } catch (err) {
+      console.error("[vaibel] agent_store_listings slug lookup failed — falling back to seeds.", err);
+      return null;
+    }
   }
   const rows = await readApprovedListingsFromFile();
   return rows.find((a) => a.slug === slug) ?? null;

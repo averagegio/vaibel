@@ -1,3 +1,8 @@
+import { hiveArticleToArticle } from "@/lib/hive-article-to-article";
+import { findHiveArticleBySlug, readHiveArticles } from "@/lib/hive-articles-store";
+import { findPublishedVaibeBySlug, readPublishedVaibes } from "@/lib/published-vaibes-store";
+import { vaibeToArticle } from "@/lib/vaibe-to-article";
+
 export type Article = {
   slug: string;
   title: string;
@@ -56,12 +61,24 @@ export const ARTICLES: Article[] = [
   },
 ];
 
-export function listArticles(): Article[] {
-  return [...ARTICLES].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+export async function listArticles(): Promise<Article[]> {
+  const [vaibes, hiveArticles] = await Promise.all([readPublishedVaibes(), readHiveArticles()]);
+  const fromVaibes = vaibes.map(vaibeToArticle);
+  const fromHive = hiveArticles.map(hiveArticleToArticle);
+  return [...fromVaibes, ...fromHive, ...ARTICLES].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 }
 
-export function getArticleBySlug(slug: string): Article | null {
-  return ARTICLES.find((a) => a.slug === slug) ?? null;
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  const editorial = ARTICLES.find((a) => a.slug === slug);
+  if (editorial) return editorial;
+  const hive = await findHiveArticleBySlug(slug);
+  if (hive) return hiveArticleToArticle(hive);
+  const vaibe = await findPublishedVaibeBySlug(slug);
+  return vaibe ? vaibeToArticle(vaibe) : null;
+}
+
+export function editorialArticleSlugs(): string[] {
+  return ARTICLES.map((a) => a.slug);
 }
 
 export function formatArticleDate(iso: string): string {

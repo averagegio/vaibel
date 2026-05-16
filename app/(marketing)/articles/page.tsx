@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArticleCard } from "@/components/articles/ArticleCard";
+import { ArticlesWriteCta } from "@/components/articles/ArticlesWriteCta";
 import { ArticleShareBar } from "@/components/articles/ArticleShareBar";
 import { listArticles } from "@/lib/articles";
 
@@ -9,8 +10,10 @@ export const metadata: Metadata = {
   description: "Hive notes on agents, vibe coding, and shipping in the era of AI.",
 };
 
-export default function ArticlesPage() {
-  const articles = listArticles();
+export const dynamic = "force-dynamic";
+
+export default async function ArticlesPage() {
+  const articles = await listArticles();
 
   return (
     <main className="relative bg-vaibee-surface pb-32 pt-8 sm:pb-36 sm:pt-10">
@@ -19,10 +22,11 @@ export default function ArticlesPage() {
           <p className="text-sm font-semibold uppercase tracking-wide text-vaibee-cyan">Hive journal</p>
           <h1 className="text-3xl font-semibold tracking-tight text-vaibee-navy md:text-4xl lg:text-5xl">Articles</h1>
           <p className="text-base leading-relaxed text-vaibee-muted md:text-lg">
-            Long-form notes from the hive — strategy, APIs, and culture. Compose a short vaibe from the dock when something
-            clicks.
+            Long-form notes from the hive — strategy, APIs, and culture. Compose a short vaibe from the dock and publish it
+            to the hive when you are ready.
           </p>
           <ArticleShareBar path="/articles" title="Articles · vAIbee" text="Notes from the vAIbee hive on agents and vibe coding." />
+          <ArticlesWriteCta />
         </header>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -33,8 +37,8 @@ export default function ArticlesPage() {
 
         <aside className="mt-14 rounded-2xl border border-dashed border-vaibee-cyan/40 bg-[var(--vaibee-cyan-dim)] px-5 py-5 sm:flex sm:items-center sm:justify-between sm:gap-4">
           <p className="text-sm leading-relaxed text-vaibee-navy">
-            <span className="font-semibold">Tip:</span> Use <strong>Compose a vaibe</strong> (bottom left) for quick thoughts,
-            then share to social when you are ready.
+            <span className="font-semibold">Tip:</span> Use <strong>Compose a vaibe</strong> (bottom left), then{" "}
+            <strong>Publish to hive</strong> to add it to this page.
           </p>
           <Link
             href="/store"

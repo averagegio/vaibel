@@ -14,6 +14,7 @@ const nav = [
   { href: "/dashboard/profile", label: "Profile" },
   { href: "/api-docs", label: "REST API" },
   { href: "/apply", label: "Apply for vibers" },
+  { href: "/admin/articles", label: "Admin · articles" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

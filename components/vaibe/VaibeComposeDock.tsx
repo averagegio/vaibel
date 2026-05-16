@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { SocialShareButtons } from "@/components/articles/SocialShareButtons";
 
 const DRAFT_KEY = "vaibel-vaibe-draft-v1";
+const PUBLISH_KEY_STORAGE = "vaibel-vaibe-publish-key-v1";
 const MAX_BODY = 500;
+const MAX_AUTHOR = 80;
 
 type Draft = { headline: string; body: string; updatedAt: string };
 
@@ -34,11 +37,16 @@ function writeDraft(d: Draft) {
 }
 
 export function VaibeComposeDock() {
+  const router = useRouter();
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [headline, setHeadline] = useState("");
   const [body, setBody] = useState("");
+  const [author, setAuthor] = useState("");
+  const [publishKey, setPublishKey] = useState("");
   const [savedFlash, setSavedFlash] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -47,6 +55,12 @@ export function VaibeComposeDock() {
     const d = readDraft();
     setHeadline(d.headline);
     setBody(d.body);
+    try {
+      const key = window.sessionStorage.getItem(PUBLISH_KEY_STORAGE);
+      if (key) setPublishKey(key);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {
@@ -67,6 +81,57 @@ export function VaibeComposeDock() {
     setSavedFlash(true);
     window.setTimeout(() => setSavedFlash(false), 2000);
   }, [headline, body, persist]);
+
+  const publish = useCallback(async () => {
+    const text = body.trim();
+    if (text.length < 12) {
+      setPublishError("Write at least 12 characters to publish.");
+      return;
+    }
+    setPublishing(true);
+    setPublishError(null);
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const key = publishKey.trim();
+      if (key) headers["x-vaibe-publish-secret"] = key;
+
+      const res = await fetch("/api/vaibes/publish", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          headline: headline.trim(),
+          body: text,
+          author: author.trim() || "Hive",
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string; url?: string };
+      if (!res.ok || !data.ok) {
+        if (res.status === 401) {
+          setPublishError(data.error ?? "Publish key required. Add it below and try again.");
+        } else {
+          setPublishError(data.error ?? "Could not publish. Try again.");
+        }
+        return;
+      }
+      if (key) {
+        try {
+          window.sessionStorage.setItem(PUBLISH_KEY_STORAGE, key);
+        } catch {
+          /* ignore */
+        }
+      }
+      writeDraft({ headline: "", body: "", updatedAt: "" });
+      setHeadline("");
+      setBody("");
+      setOpen(false);
+      router.push(data.url ?? "/articles");
+      router.refresh();
+    } catch {
+      setPublishError("Network error — check your connection and try again.");
+    } finally {
+      setPublishing(false);
+    }
+  }, [author, body, headline, publishKey, router]);
 
   const shareTitle = headline.trim() || "A vaibe from the hive";
   const shareText = body.trim() ? `${headline.trim() ? `${headline.trim()}\n\n` : ""}${body.trim()}` : shareTitle;
@@ -137,14 +202,49 @@ export function VaibeComposeDock() {
                   className="w-full resize-none rounded-xl border border-vaibee-border bg-vaibee-surface px-3 py-2 text-sm leading-relaxed text-vaibee-navy outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
                 />
               </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-vaibee-muted">Byline (optional)</span>
+                <input
+                  type="text"
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value.slice(0, MAX_AUTHOR))}
+                  placeholder="Your name or handle"
+                  maxLength={MAX_AUTHOR}
+                  className="w-full rounded-xl border border-vaibee-border bg-vaibee-surface px-3 py-2 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-vaibee-muted">Publish key (if your site requires one)</span>
+                <input
+                  type="password"
+                  value={publishKey}
+                  onChange={(e) => setPublishKey(e.target.value)}
+                  placeholder="Only needed when VAIBE_PUBLISH_SECRET is set"
+                  autoComplete="off"
+                  className="w-full rounded-xl border border-vaibee-border bg-vaibee-surface px-3 py-2 text-sm text-vaibee-navy outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
+                />
+              </label>
               <p className="text-right text-[0.65rem] text-vaibee-muted">
                 {body.length}/{MAX_BODY}
               </p>
+              {publishError ? (
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-800" role="alert">
+                  {publishError}
+                </p>
+              ) : null}
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
+                  onClick={() => void publish()}
+                  disabled={publishing || body.trim().length < 12}
+                  className="rounded-xl bg-vaibee-cyan px-4 py-2 text-sm font-semibold text-vaibee-navy transition hover:brightness-105 disabled:opacity-40"
+                >
+                  {publishing ? "Publishing…" : "Publish to hive"}
+                </button>
+                <button
+                  type="button"
                   onClick={saveDraft}
-                  className="rounded-xl bg-vaibee-navy px-4 py-2 text-sm font-semibold text-white transition hover:bg-vaibee-navy-soft"
+                  className="rounded-xl border border-vaibee-border bg-vaibee-surface px-4 py-2 text-sm font-semibold text-vaibee-navy transition hover:border-vaibee-cyan/40"
                 >
                   {savedFlash ? "Saved" : "Save draft"}
                 </button>

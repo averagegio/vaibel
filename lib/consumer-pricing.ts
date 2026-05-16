@@ -33,6 +33,7 @@ export const CONSUMER_PLANS: PricingTier[] = [
     highlight: true,
     features: [
       "Up to 25 active agent installs",
+      "Publish long-form hive articles",
       "Shared workspace + usage snapshot",
       "Priority support (24h)",
       "Webhook-friendly installs",

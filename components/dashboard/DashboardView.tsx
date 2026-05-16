@@ -85,6 +85,7 @@ export function DashboardView({ featuredPicks }: { featuredPicks: AgentListing[]
   const planLabel = billing.tier
     ? `Active plan · ${billing.tier.charAt(0).toUpperCase()}${billing.tier.slice(1)}`
     : null;
+  const canWriteArticles = billing.tier === "team";
   const picks = featuredPicks;
 
   return (
@@ -107,19 +108,35 @@ export function DashboardView({ featuredPicks }: { featuredPicks: AgentListing[]
             Start application →
           </span>
         </Link>
-        <Link
-          href="/apply"
-          className="flex flex-col justify-between rounded-3xl border border-dashed border-vaibee-cyan/45 bg-[var(--vaibee-cyan-dim)] p-6 transition hover:border-vaibee-cyan/70 hover:shadow-md"
-        >
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-vaibee-navy/70">Program</p>
-            <h2 className="mt-2 text-lg font-semibold text-vaibee-navy">Apply for vibers</h2>
-            <p className="mt-2 text-sm text-vaibee-navy/80">
-              Join the curated builder program — review, feedback, and a path to the public store.
-            </p>
-          </div>
-          <span className="mt-4 text-sm font-semibold text-vaibee-cyan">Learn more →</span>
-        </Link>
+        {canWriteArticles ? (
+          <Link
+            href="/dashboard/articles/write"
+            className="flex flex-col justify-between rounded-3xl border border-dashed border-vaibee-cyan/45 bg-[var(--vaibee-cyan-dim)] p-6 transition hover:border-vaibee-cyan/70 hover:shadow-md"
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-vaibee-navy/70">Journal</p>
+              <h2 className="mt-2 text-lg font-semibold text-vaibee-navy">Write an article</h2>
+              <p className="mt-2 text-sm text-vaibee-navy/80">
+                Publish long-form notes to the hive — included with your Vibe team plan.
+              </p>
+            </div>
+            <span className="mt-4 text-sm font-semibold text-vaibee-cyan">Open editor →</span>
+          </Link>
+        ) : (
+          <Link
+            href="/apply"
+            className="flex flex-col justify-between rounded-3xl border border-dashed border-vaibee-cyan/45 bg-[var(--vaibee-cyan-dim)] p-6 transition hover:border-vaibee-cyan/70 hover:shadow-md"
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-vaibee-navy/70">Program</p>
+              <h2 className="mt-2 text-lg font-semibold text-vaibee-navy">Apply for vibers</h2>
+              <p className="mt-2 text-sm text-vaibee-navy/80">
+                Join the curated builder program — review, feedback, and a path to the public store.
+              </p>
+            </div>
+            <span className="mt-4 text-sm font-semibold text-vaibee-cyan">Learn more →</span>
+          </Link>
+        )}
         <div className="flex flex-col gap-2 rounded-3xl border border-vaibee-border bg-vaibee-card p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-vaibee-muted">Quick</p>
           <Link

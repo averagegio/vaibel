@@ -77,6 +77,9 @@ export function MarketingChrome() {
       <Link href="/pricing" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
         Pricing
       </Link>
+      <Link href="/articles" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
+        Articles
+      </Link>
       <Link href="/about" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
         About
       </Link>

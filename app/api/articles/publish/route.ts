@@ -53,7 +53,11 @@ export async function POST(req: NextRequest) {
     if (msg === "duplicate_slug") {
       return NextResponse.json({ ok: false, error: "Slug conflict — try again." }, { status: 409 });
     }
-    throw e;
+    console.error("[vaibel] member article publish failed:", e);
+    return NextResponse.json(
+      { ok: false, error: msg || "Could not save article to the database." },
+      { status: 500 },
+    );
   }
 
   revalidatePath("/articles");

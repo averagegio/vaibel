@@ -57,13 +57,29 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
 
       const url = mode === "admin" ? "/api/admin/articles" : "/api/articles/publish";
       const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
-      const data = (await res.json()) as { ok?: boolean; error?: string; url?: string; code?: string };
+      const raw = await res.text();
+      let data: { ok?: boolean; error?: string; url?: string; code?: string } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        setError(
+          res.ok
+            ? "Unexpected server response."
+            : `Server error (${res.status}). Check Vercel logs or /api/health/db.`,
+        );
+        return;
+      }
 
       if (!res.ok || !data.ok) {
         if (data.code === "team_required") {
           setError("Upgrade to Vibe team on the Pricing page, using this same email in Stripe Checkout.");
+        } else if (res.status === 401) {
+          setError(
+            data.error ??
+              "Unauthorized — use the Admin secret field below (must match VAIBEE_ADMIN_SECRET on Vercel).",
+          );
         } else {
-          setError(data.error ?? "Could not publish.");
+          setError(data.error ?? `Could not publish (${res.status}).`);
         }
         return;
       }
@@ -71,7 +87,7 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
       router.push(data.url ?? "/articles");
       router.refresh();
     } catch {
-      setError("Network error — try again.");
+      setError("Could not reach the server — check your connection and try again.");
     } finally {
       setBusy(false);
     }

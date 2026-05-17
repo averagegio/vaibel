@@ -18,46 +18,56 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = requireAdminRequest(req);
-  if (denied) return denied;
-
-  let body: unknown;
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Invalid JSON body." }, { status: 400 });
-  }
+    const denied = requireAdminRequest(req);
+    if (denied) return denied;
 
-  const parsed = parseArticleDraft(body as Parameters<typeof parseArticleDraft>[0]);
-  if (!parsed.ok) {
-    return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
-  }
-
-  const existingSlug = String((body as { existingSlug?: string }).existingSlug ?? "").trim();
-  const existing = existingSlug ? await findHiveArticleBySlug(existingSlug) : null;
-
-  const base = slugFromDraft(parsed.draft);
-  const taken = await collectReservedArticleSlugs();
-  if (existing) taken.delete(existing.slug);
-  const slug = ensureUniqueSlug(base, taken);
-
-  const entry = buildHiveArticle(parsed.draft, slug, existing?.authorEmail ?? null, existing);
-
-  try {
-    await upsertHiveArticle(entry);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "";
-    if (msg === "duplicate_slug") {
-      return NextResponse.json({ ok: false, error: "Slug already in use." }, { status: 409 });
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ ok: false, error: "Invalid JSON body." }, { status: 400 });
     }
-    throw e;
-  }
 
-  revalidatePath("/articles");
-  revalidatePath(`/articles/${slug}`);
-  if (existingSlug && existingSlug !== slug) {
-    revalidatePath(`/articles/${existingSlug}`);
-  }
+    const parsed = parseArticleDraft(body as Parameters<typeof parseArticleDraft>[0]);
+    if (!parsed.ok) {
+      return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
+    }
 
-  return NextResponse.json({ ok: true, slug, url: `/articles/${slug}` });
+    const existingSlug = String((body as { existingSlug?: string }).existingSlug ?? "").trim();
+    const existing = existingSlug ? await findHiveArticleBySlug(existingSlug) : null;
+
+    const base = slugFromDraft(parsed.draft);
+    const taken = await collectReservedArticleSlugs();
+    if (existing) taken.delete(existing.slug);
+    const slug = ensureUniqueSlug(base, taken);
+
+    const entry = buildHiveArticle(parsed.draft, slug, existing?.authorEmail ?? null, existing);
+
+    try {
+      await upsertHiveArticle(entry);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg === "duplicate_slug") {
+        return NextResponse.json({ ok: false, error: "Slug already in use." }, { status: 409 });
+      }
+      console.error("[vaibel] admin article upsert failed:", e);
+      return NextResponse.json(
+        { ok: false, error: msg || "Could not save article to the database." },
+        { status: 500 },
+      );
+    }
+
+    revalidatePath("/articles");
+    revalidatePath(`/articles/${slug}`);
+    if (existingSlug && existingSlug !== slug) {
+      revalidatePath(`/articles/${existingSlug}`);
+    }
+
+    return NextResponse.json({ ok: true, slug, url: `/articles/${slug}` });
+  } catch (e) {
+    console.error("[vaibel] admin articles POST:", e);
+    const message = e instanceof Error ? e.message : "Publish failed.";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }

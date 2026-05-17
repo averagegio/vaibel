@@ -11,7 +11,7 @@ import type { HiveArticleStored } from "@/lib/hive-article-types";
 import { useAdminSecret } from "@/lib/use-admin-secret";
 
 export function AdminArticleEditPanel({ slug }: { slug?: string }) {
-  const { secret, setSecret, adminHeaders } = useAdminSecret();
+  const { secret, adminHeaders } = useAdminSecret();
   const [initial, setInitial] = useState<ArticleEditorInitial | undefined>(slug ? undefined : { title: "", excerpt: "", bodyText: "", author: "vAIbee Editorial", tags: "", slug: "" });
   const [loading, setLoading] = useState(Boolean(slug));
   const [error, setError] = useState<string | null>(null);
@@ -65,16 +65,11 @@ export function AdminArticleEditPanel({ slug }: { slug?: string }) {
         ) : null}
       </div>
 
-      {!slug ? (
-        <label className="block max-w-md">
-          <span className="mb-1 block text-xs font-semibold text-vaibee-muted">Admin secret</span>
-          <input
-            type="password"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            className="w-full rounded-xl border border-vaibee-border bg-white px-3 py-2 text-sm outline-none ring-vaibee-cyan/30 focus:border-vaibee-cyan focus:ring-2"
-          />
-        </label>
+      {!secret.trim() && !slug ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Enter your <strong>Admin secret</strong> in the editor below (same value as{" "}
+          <code className="text-xs">VAIBEE_ADMIN_SECRET</code> on Vercel).
+        </p>
       ) : null}
 
       {loading ? <p className="text-sm text-vaibee-muted">Loading…</p> : null}

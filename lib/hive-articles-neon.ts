@@ -66,6 +66,8 @@ export async function findHiveArticleBySlugInNeon(slug: string): Promise<HiveArt
 
 export async function upsertHiveArticleInNeon(entry: HiveArticleStored): Promise<void> {
   const sql = getSql();
+  const bodyJson = JSON.stringify(entry.body);
+  const tagsJson = JSON.stringify(entry.tags);
   await sql`
     INSERT INTO hive_articles (
       id, slug, title, excerpt, body, author, author_email, tags, published_at, updated_at
@@ -75,10 +77,10 @@ export async function upsertHiveArticleInNeon(entry: HiveArticleStored): Promise
       ${entry.slug},
       ${entry.title},
       ${entry.excerpt},
-      ${JSON.stringify(entry.body)}::jsonb,
+      ${bodyJson},
       ${entry.author},
       ${entry.authorEmail},
-      ${JSON.stringify(entry.tags)}::jsonb,
+      ${tagsJson},
       ${entry.publishedAt},
       ${entry.updatedAt}
     )

@@ -1,10 +1,8 @@
-import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { collectReservedArticleSlugs } from "@/lib/article-slugs";
 import { requireAdminRequest } from "@/lib/article-publish-auth";
-import { buildHiveArticle, parseArticleDraft, slugFromDraft } from "@/lib/hive-article-publish";
-import { findHiveArticleBySlug, readHiveArticles, upsertHiveArticle } from "@/lib/hive-articles-store";
-import { ensureUniqueSlug } from "@/lib/slug";
+import { parseArticleDraft } from "@/lib/hive-article-publish";
+import { readHiveArticles } from "@/lib/hive-articles-store";
+import { publishHiveArticleServer } from "@/lib/publish-hive-article-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,36 +33,22 @@ export async function POST(req: NextRequest) {
     }
 
     const existingSlug = String((body as { existingSlug?: string }).existingSlug ?? "").trim();
-    const existing = existingSlug ? await findHiveArticleBySlug(existingSlug) : null;
+    const published = await publishHiveArticleServer({
+      title: parsed.draft.title,
+      excerpt: parsed.draft.excerpt,
+      bodyText: parsed.draft.paragraphs.join("\n\n"),
+      author: parsed.draft.author,
+      tags: parsed.draft.tags.join(", "),
+      slug: parsed.draft.slugHint,
+      existingSlug,
+    });
 
-    const base = slugFromDraft(parsed.draft);
-    const taken = await collectReservedArticleSlugs();
-    if (existing) taken.delete(existing.slug);
-    const slug = ensureUniqueSlug(base, taken);
-
-    const entry = buildHiveArticle(parsed.draft, slug, existing?.authorEmail ?? null, existing);
-
-    try {
-      await upsertHiveArticle(entry);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "";
-      if (msg === "duplicate_slug") {
-        return NextResponse.json({ ok: false, error: "Slug already in use." }, { status: 409 });
-      }
-      console.error("[vaibel] admin article upsert failed:", e);
-      return NextResponse.json(
-        { ok: false, error: msg || "Could not save article to the database." },
-        { status: 500 },
-      );
+    if (!published.ok) {
+      const status = published.error.includes("Slug") ? 409 : 500;
+      return NextResponse.json({ ok: false, error: published.error }, { status });
     }
 
-    revalidatePath("/articles");
-    revalidatePath(`/articles/${slug}`);
-    if (existingSlug && existingSlug !== slug) {
-      revalidatePath(`/articles/${existingSlug}`);
-    }
-
-    return NextResponse.json({ ok: true, slug, url: `/articles/${slug}` });
+    return NextResponse.json({ ok: true, slug: published.slug, url: published.path });
   } catch (e) {
     console.error("[vaibel] admin articles POST:", e);
     const message = e instanceof Error ? e.message : "Publish failed.";

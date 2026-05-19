@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isOpenAIConfigured, runVaibeeOpenAIChat } from "@/lib/vaibee-openai";
+import { getAppOrigin } from "@/lib/stripe-server";
+import { canVaibeeChatPublishArticles } from "@/lib/vaibee-chat-publish";
+import { normalizeAuthorEmail } from "@/lib/article-publish-auth";
+import { isOpenAIConfigured, runVaibeeOpenAIChat, runVaibeeOpenAIChatWithTools } from "@/lib/vaibee-openai";
+import { isTavilyConfigured } from "@/lib/tavily-server";
 
 export const runtime = "nodejs";
 
@@ -20,6 +24,18 @@ function buildFallbackReply(message: string): string {
   }
   if (lower.includes("store") || lower.includes("agent")) {
     return "Browse curated agents in the store — each listing links to API details so you can wire the slug into your stack.";
+  }
+  if (
+    (lower.includes("article") || lower.includes("publish")) &&
+    (lower.includes("write") || lower.includes("post") || lower.includes("create"))
+  ) {
+    if (!isOpenAIConfigured()) {
+      return "Set OPENAI_API_KEY to let me draft and publish articles from chat.";
+    }
+    if (!canVaibeeChatPublishArticles()) {
+      return "Chat publishing is off — set VAIBEE_ADMIN_SECRET and VAIBEE_CHAT_PUBLISH_ARTICLES=true on the server, or use /admin/articles.";
+    }
+    return "Ask me again with OPENAI enabled — I can search the web and publish articles to /articles when server tools are configured.";
   }
   const preview = m.length > 160 ? `${m.slice(0, 160)}…` : m;
   return `You said: “${preview}”. Set OPENAI_API_KEY (and optionally OPENAI_MODEL) for full conversational answers. Until then, try the store, pricing, or API docs from the header.`;
@@ -57,9 +73,27 @@ export async function POST(req: NextRequest) {
   }
 
   const prior = sanitizePrior((body as { messages?: unknown }).messages);
+  const requesterEmail = normalizeAuthorEmail(String((body as { email?: string }).email ?? ""));
+  const appOrigin = getAppOrigin(req);
+  const useTools =
+    isOpenAIConfigured() && (canVaibeeChatPublishArticles(requesterEmail) || isTavilyConfigured());
 
   try {
     if (isOpenAIConfigured()) {
+      if (useTools) {
+        const { reply, articleUrl, toolsUsed } = await runVaibeeOpenAIChatWithTools(
+          message,
+          prior,
+          appOrigin,
+          requesterEmail,
+        );
+        return NextResponse.json({
+          reply,
+          source: "openai" as const,
+          articleUrl: articleUrl ?? null,
+          toolsUsed: toolsUsed.length ? toolsUsed : undefined,
+        });
+      }
       const reply = await runVaibeeOpenAIChat(message, prior);
       return NextResponse.json({ reply, source: "openai" as const });
     }

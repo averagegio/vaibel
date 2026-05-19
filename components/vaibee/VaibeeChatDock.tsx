@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string };
 
@@ -82,6 +83,7 @@ function DockDragHandle(props: {
 }
 
 export function VaibeeChatDock() {
+  const { user } = useAuth();
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -223,13 +225,20 @@ export function VaibeeChatDock() {
       const res = await fetch("/api/vaibee/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, messages: prior }),
+        body: JSON.stringify({ message: text, messages: prior, email: user?.email ?? undefined }),
       });
-      const data = (await res.json().catch(() => null)) as { reply?: string; error?: string } | null;
-      const reply =
+      const data = (await res.json().catch(() => null)) as {
+        reply?: string;
+        error?: string;
+        articleUrl?: string | null;
+      } | null;
+      let reply =
         res.ok && data?.reply
           ? data.reply
           : data?.error ?? "Something went wrong — try again in a moment.";
+      if (res.ok && data?.articleUrl) {
+        reply = `${reply}\n\nPublished: ${data.articleUrl}`;
+      }
       setMsgs((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
     } catch {
       setMsgs((m) => [

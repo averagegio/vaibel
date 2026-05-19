@@ -231,6 +231,7 @@ export function VaibeeChatDock() {
         reply?: string;
         error?: string;
         articleUrl?: string | null;
+        xTweetUrl?: string | null;
       } | null;
       let reply =
         res.ok && data?.reply
@@ -238,6 +239,9 @@ export function VaibeeChatDock() {
           : data?.error ?? "Something went wrong — try again in a moment.";
       if (res.ok && data?.articleUrl) {
         reply = `${reply}\n\nPublished: ${data.articleUrl}`;
+      }
+      if (res.ok && data?.xTweetUrl) {
+        reply = `${reply}\n\nPosted on X: ${data.xTweetUrl}`;
       }
       setMsgs((m) => [...m, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
     } catch {

@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { canVaibeeChatPublishArticles } from "@/lib/vaibee-chat-publish";
 import { executeVaibeeTool, vaibeeToolsEnabled } from "@/lib/vaibee-tools";
 import { isTavilyConfigured } from "@/lib/tavily-server";
+import { isXPostConfigured, xAutoPostEnabled } from "@/lib/x-server";
 
 const BASE_SYSTEM = `You are Vaibee, the concise assistant for vAIbee — an AI agent app store for builders and teams.
 Help with agents, the REST API, pricing, Stripe checkout, the dashboard, and navigating the site.
@@ -26,6 +27,11 @@ function buildSystemPrompt(requesterEmail?: string | null): string {
     parts.push(
       "\nPublishing runs server-side — never ask the user for an admin secret. After publish_hive_article succeeds, share the exact url from the tool result.",
     );
+    if (isXPostConfigured() && xAutoPostEnabled()) {
+      parts.push(
+        "\nWhen X is configured, articles are also posted to @askvaibee automatically. Include xTweetUrl from the tool result when present.",
+      );
+    }
   } else if (isTavilyConfigured()) {
     parts.push(
       "\nArticle publishing via chat is disabled on this server. You may still search the web, but tell the user to use /admin/articles to publish.",
@@ -56,6 +62,7 @@ export type VaibeeChatTurn = { role: "user" | "assistant"; content: string };
 export type VaibeeChatResult = {
   reply: string;
   articleUrl?: string;
+  xTweetUrl?: string;
   toolsUsed: string[];
 };
 
@@ -106,6 +113,10 @@ function openAiTools(requesterEmail?: string | null): OpenAI.Chat.ChatCompletion
             },
             author: { type: "string" },
             slug: { type: "string", description: "Optional URL slug" },
+            post_to_x: {
+              type: "boolean",
+              description: "Post announcement to @askvaibee on X (default true when X API is configured)",
+            },
           },
           required: ["title", "excerpt", "body_paragraphs"],
           additionalProperties: false,
@@ -140,6 +151,7 @@ export async function runVaibeeOpenAIChatWithTools(
 
   const toolsUsed: string[] = [];
   let articleUrl: string | undefined;
+  let xTweetUrl: string | undefined;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
     const completion = await openai.chat.completions.create({
@@ -162,7 +174,7 @@ export async function runVaibeeOpenAIChatWithTools(
       if (!text) {
         throw new Error("The model returned an empty reply.");
       }
-      return { reply: text, articleUrl, toolsUsed };
+      return { reply: text, articleUrl, xTweetUrl, toolsUsed };
     }
 
     messages.push({
@@ -187,6 +199,12 @@ export async function runVaibeeOpenAIChatWithTools(
       const { result, articlePath } = await executeVaibeeTool(name, parsedArgs, appOrigin, requesterEmail);
       if (articlePath) {
         articleUrl = `${appOrigin.replace(/\/$/, "")}${articlePath}`;
+      }
+      try {
+        const payload = JSON.parse(result) as { xTweetUrl?: string | null };
+        if (payload.xTweetUrl) xTweetUrl = payload.xTweetUrl;
+      } catch {
+        /* ignore */
       }
 
       messages.push({

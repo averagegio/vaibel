@@ -58,7 +58,14 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
       const url = mode === "admin" ? "/api/admin/articles" : "/api/articles/publish";
       const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(payload) });
       const raw = await res.text();
-      let data: { ok?: boolean; error?: string; url?: string; code?: string } = {};
+      let data: {
+        ok?: boolean;
+        error?: string;
+        url?: string;
+        code?: string;
+        xTweetUrl?: string | null;
+        xError?: string | null;
+      } = {};
       try {
         data = raw ? (JSON.parse(raw) as typeof data) : {};
       } catch {
@@ -84,7 +91,17 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
         return;
       }
 
-      router.push(data.url ?? "/articles");
+      const dest = data.url ?? "/articles";
+      if (data.xTweetUrl) {
+        window.open(data.xTweetUrl, "_blank", "noopener,noreferrer");
+      }
+      if (data.xError) {
+        setError(`Article published, but X post failed: ${data.xError}`);
+        router.push(dest);
+        router.refresh();
+        return;
+      }
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Could not reach the server — check your connection and try again.");

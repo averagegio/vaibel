@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
   try {
     if (isOpenAIConfigured()) {
       if (useTools) {
-        const { reply, articleUrl, toolsUsed } = await runVaibeeOpenAIChatWithTools(
+        const { reply, articleUrl, xTweetUrl, toolsUsed } = await runVaibeeOpenAIChatWithTools(
           message,
           prior,
           appOrigin,
@@ -91,6 +91,7 @@ export async function POST(req: NextRequest) {
           reply,
           source: "openai" as const,
           articleUrl: articleUrl ?? null,
+          xTweetUrl: xTweetUrl ?? null,
           toolsUsed: toolsUsed.length ? toolsUsed : undefined,
         });
       }

@@ -96,6 +96,7 @@ async function runPublishHiveArticle(
     tags?: unknown;
     author?: string;
     slug?: string;
+    post_to_x?: boolean;
   };
 
   const paragraphs = Array.isArray(a.body_paragraphs)
@@ -115,6 +116,8 @@ async function runPublishHiveArticle(
     author: a.author ?? "vAIbee Editorial",
     tags,
     slug: a.slug,
+    appOrigin,
+    postToX: a.post_to_x !== false,
   });
 
   if (!published.ok) {
@@ -128,6 +131,8 @@ async function runPublishHiveArticle(
       slug: published.slug,
       path: published.path,
       url: fullUrl,
+      xTweetUrl: published.xTweetUrl ?? null,
+      xError: published.xError ?? null,
     }),
     articlePath: published.path,
   };

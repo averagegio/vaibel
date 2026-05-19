@@ -3,6 +3,7 @@ import { requireAdminRequest } from "@/lib/article-publish-auth";
 import { parseArticleDraft } from "@/lib/hive-article-publish";
 import { readHiveArticles } from "@/lib/hive-articles-store";
 import { publishHiveArticleServer } from "@/lib/publish-hive-article-server";
+import { getAppOrigin } from "@/lib/stripe-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest) {
     }
 
     const existingSlug = String((body as { existingSlug?: string }).existingSlug ?? "").trim();
+    const postToX = (body as { postToX?: boolean }).postToX !== false;
+
     const published = await publishHiveArticleServer({
       title: parsed.draft.title,
       excerpt: parsed.draft.excerpt,
@@ -41,6 +44,8 @@ export async function POST(req: NextRequest) {
       tags: parsed.draft.tags.join(", "),
       slug: parsed.draft.slugHint,
       existingSlug,
+      appOrigin: getAppOrigin(req),
+      postToX,
     });
 
     if (!published.ok) {
@@ -48,7 +53,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: published.error }, { status });
     }
 
-    return NextResponse.json({ ok: true, slug: published.slug, url: published.path });
+    return NextResponse.json({
+      ok: true,
+      slug: published.slug,
+      url: published.path,
+      xTweetUrl: published.xTweetUrl ?? null,
+      xError: published.xError ?? null,
+    });
   } catch (e) {
     console.error("[vaibel] admin articles POST:", e);
     const message = e instanceof Error ? e.message : "Publish failed.";

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/gen-favicon.mjs && next build",
+    "gen-favicon": "node scripts/gen-favicon.mjs",
     "start": "next start",
     "lint": "eslint",
     "strip-logo-bg": "node scripts/strip-logo-bg.mjs"

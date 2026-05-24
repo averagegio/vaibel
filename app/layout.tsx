@@ -22,9 +22,11 @@ export const metadata: Metadata = {
   description:
     "Plug-and-play app store for vibe-coder AI agents — approachable REST API, curated hive, built by vibe coders.",
   icons: {
-    icon: [{ url: "/vai-bee.png", type: "image/png" }],
-    shortcut: [{ url: "/vai-bee.png", type: "image/png" }],
-    apple: [{ url: "/vai-bee.png", type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
   },
 };
 

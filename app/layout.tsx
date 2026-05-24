@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   },
   description:
     "Plug-and-play app store for vibe-coder AI agents — approachable REST API, curated hive, built by vibe coders.",
+  icons: {
+    icon: [{ url: "/vaibeelogos.png", type: "image/png" }],
+    apple: [{ url: "/vaibeelogos.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({

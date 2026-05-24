@@ -5,38 +5,50 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { isMarketingHeroRoute } from "@/lib/landing-hero";
+import {
+  isLandingIntroRoute,
+  LANDING_INTRO_FADE_DISTANCE_PX,
+} from "@/lib/landing-hero";
 import { SignupCtaLink } from "@/components/SignupCtaLink";
 
-/** Pixels scrolled past top before hero nav hides (avoids flicker on tiny moves). */
-const HERO_NAV_HIDE_AFTER_SCROLL_PX = 40;
+/** Store hero: hide floating nav after small scroll. */
+const STORE_HERO_NAV_HIDE_AFTER_SCROLL_PX = 40;
 
-/** Marketing hero routes: GIF reads through the pill; solid white pill on hover or focus-within */
 const heroNavLink =
   "rounded-md px-3 py-2 text-white/95 outline-none transition-colors duration-300 [text-shadow:0_2px_10px_rgba(0,0,0,0.72)] group-hover/header:text-vaibee-navy group-hover/header:[text-shadow:none] group-hover/header:hover:bg-[#eef2f8] group-focus-within/header:text-vaibee-navy group-focus-within/header:[text-shadow:none] group-focus-within/header:hover:bg-[#eef2f8] focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent group-hover/header:focus-visible:ring-vaibee-navy/35 group-hover/header:focus-visible:ring-offset-white";
 
 export function MarketingChrome() {
   const pathname = usePathname();
-  const isFloatingHero = isMarketingHeroRoute(pathname);
+  const isHomeIntro = isLandingIntroRoute(pathname);
+  const isStoreHero = pathname === "/store";
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
-  const [heroNavPinned, setHeroNavPinned] = useState(true);
+  const [heroNavVisible, setHeroNavVisible] = useState(!isHomeIntro);
 
   useEffect(() => {
     setPortalEl(document.body);
   }, []);
 
   useEffect(() => {
-    if (!isFloatingHero) {
-      setHeroNavPinned(true);
-      return;
+    if (isHomeIntro) {
+      const onScroll = () => {
+        setHeroNavVisible(window.scrollY >= LANDING_INTRO_FADE_DISTANCE_PX);
+      };
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      return () => window.removeEventListener("scroll", onScroll);
     }
-    const onScroll = () => {
-      setHeroNavPinned(window.scrollY < HERO_NAV_HIDE_AFTER_SCROLL_PX);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isFloatingHero, pathname]);
+
+    if (isStoreHero) {
+      const onScroll = () => {
+        setHeroNavVisible(window.scrollY < STORE_HERO_NAV_HIDE_AFTER_SCROLL_PX);
+      };
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      return () => window.removeEventListener("scroll", onScroll);
+    }
+
+    setHeroNavVisible(true);
+  }, [isHomeIntro, isStoreHero, pathname]);
 
   const defaultLogo = (
     <Link href="/" className="flex shrink-0 items-center py-2 pr-2">
@@ -51,7 +63,6 @@ export function MarketingChrome() {
     </Link>
   );
 
-  /** Home link as a compact icon-style control inside the hero pill (same box as nav links). */
   const heroLogoIcon = (
     <Link
       href="/"
@@ -69,35 +80,95 @@ export function MarketingChrome() {
     </Link>
   );
 
-  const nav = (
+  const nav = (floating: boolean) => (
     <nav className="flex flex-wrap items-center justify-end gap-1 text-sm font-semibold sm:gap-2">
-      <Link href="/store" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
+      <Link
+        href="/store"
+        className={
+          floating
+            ? heroNavLink
+            : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
+        }
+      >
         Store
       </Link>
-      <Link href="/pricing" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
+      <Link
+        href="/pricing"
+        className={
+          floating
+            ? heroNavLink
+            : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
+        }
+      >
         Pricing
       </Link>
-      <Link href="/articles" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
+      <Link
+        href="/articles"
+        className={
+          floating
+            ? heroNavLink
+            : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
+        }
+      >
         Articles
       </Link>
-      <Link href="/about" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
+      <Link
+        href="/about"
+        className={
+          floating
+            ? heroNavLink
+            : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
+        }
+      >
         About
       </Link>
-      <Link href="/auth" className={isFloatingHero ? heroNavLink : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"}>
+      <Link
+        href="/auth"
+        className={
+          floating
+            ? heroNavLink
+            : "rounded-full px-3 py-2 text-vaibee-muted transition hover:bg-[#f4f7fb] hover:text-vaibee-navy"
+        }
+      >
         Log in
       </Link>
-      <SignupCtaLink href="/auth?mode=signup" size="sm" variant={isFloatingHero ? "hero" : "default"}>
+      <SignupCtaLink href="/auth?mode=signup" size="sm" variant={floating ? "hero" : "default"}>
         Sign up
       </SignupCtaLink>
     </nav>
   );
 
-  if (isFloatingHero) {
+  if (isHomeIntro && heroNavVisible) {
+    const header = (
+      <header
+        className="fixed left-0 right-0 top-0 z-40 border-b border-black/[0.06] bg-white pt-0 shadow-sm transition-[transform,opacity] duration-300 ease-out"
+        data-marketing-hero-nav
+      >
+        <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          {defaultLogo}
+          {nav(false)}
+        </div>
+      </header>
+    );
+
+    return (
+      <>
+        <div className="h-[3.75rem] shrink-0" aria-hidden />
+        {portalEl ? createPortal(header, portalEl) : null}
+      </>
+    );
+  }
+
+  if (isHomeIntro) {
+    return null;
+  }
+
+  if (isStoreHero) {
     const heroHeader = (
       <header
         className={[
           "fixed left-0 right-0 top-0 z-40 border-0 bg-transparent pt-3 transition-[transform,opacity] duration-300 ease-out sm:pt-4",
-          heroNavPinned ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[calc(100%+0.5rem)] opacity-0",
+          heroNavVisible ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-[calc(100%+0.5rem)] opacity-0",
         ].join(" ")}
         data-marketing-hero-nav
       >
@@ -110,7 +181,7 @@ export function MarketingChrome() {
             ].join(" ")}
           >
             {heroLogoIcon}
-            {nav}
+            {nav(true)}
           </div>
         </div>
       </header>
@@ -121,7 +192,7 @@ export function MarketingChrome() {
         <div
           className={[
             "overflow-hidden transition-[height] duration-300 ease-out",
-            heroNavPinned ? "h-[5rem] sm:h-[5.25rem]" : "h-0",
+            heroNavVisible ? "h-[5rem] sm:h-[5.25rem]" : "h-0",
           ].join(" ")}
           aria-hidden
         />
@@ -134,7 +205,7 @@ export function MarketingChrome() {
     <header className="sticky top-0 z-30 border-b border-black/[0.06] bg-white">
       <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         {defaultLogo}
-        {nav}
+        {nav(false)}
       </div>
     </header>
   );

@@ -4,13 +4,13 @@ import { usePathname } from "next/navigation";
 import { isMarketingHeroRoute, LANDING_HERO_BAND_CLASS } from "@/lib/landing-hero";
 
 /**
- * Top GIF for `/` and `/store`: tall band behind the floating nav; soft gradient ends in white on `/` and `--vaibee-surface` on `/store`.
+ * Top GIF band for `/store` only. `/` uses `LandingIntroHero` with scroll fade instead.
  */
 export function HomeLandingBackdrop() {
   const pathname = usePathname();
-  if (!isMarketingHeroRoute(pathname)) return null;
+  if (pathname !== "/store") return null;
 
-  const fadeBottom = pathname === "/" ? "#ffffff" : "var(--vaibee-surface)";
+  const fadeBottom = "var(--vaibee-surface)";
 
   return (
     <div
@@ -19,7 +19,7 @@ export function HomeLandingBackdrop() {
     >
       <div className="absolute inset-0">
         <img
-          src="/vaibeestatic1.gif"
+          src="/vaibo.gif"
           alt=""
           className="h-full w-full object-cover object-[center_28%] sm:object-center"
           loading="eager"

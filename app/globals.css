@@ -104,6 +104,16 @@ body {
   }
 }
 
+/* Home intro headline — thin display type over vaibo.gif */
+.landing-intro-title {
+  font-family: var(--font-outfit), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: clamp(1.65rem, 4.2vw, 3.1rem);
+  font-weight: 200;
+  letter-spacing: 0.16em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
 /* Landing: infinite horizontal ticker (duplicate track; move -50% for seamless loop) */
 @keyframes landing-marquee-scroll {
   from {

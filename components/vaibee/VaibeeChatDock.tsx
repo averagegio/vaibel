@@ -1,9 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
+import {
+  isLandingIntroRoute,
+  LANDING_INTRO_FADE_DISTANCE_PX,
+  LANDING_VIABLE_SECTION_ID,
+} from "@/lib/landing-hero";
 
 type Msg = { id: string; role: "user" | "assistant"; content: string };
 
@@ -84,11 +90,47 @@ function DockDragHandle(props: {
 
 export function VaibeeChatDock() {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const isHome = isLandingIntroRoute(pathname);
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
+  const [homeDockVisible, setHomeDockVisible] = useState(!isHome);
 
   useEffect(() => {
     setPortalEl(document.body);
   }, []);
+
+  useEffect(() => {
+    if (!isHome) {
+      setHomeDockVisible(true);
+      return;
+    }
+
+    const section = document.getElementById(LANDING_VIABLE_SECTION_ID);
+    if (!section) return;
+
+    const sync = () => {
+      const pastIntro = window.scrollY >= LANDING_INTRO_FADE_DISTANCE_PX;
+      if (!pastIntro) {
+        setHomeDockVisible(false);
+        return;
+      }
+      const { top } = section.getBoundingClientRect();
+      setHomeDockVisible(top <= window.innerHeight * 0.7);
+    };
+
+    const observer = new IntersectionObserver(sync, {
+      threshold: [0, 0.05, 0.12],
+      rootMargin: "0px 0px -20% 0px",
+    });
+    observer.observe(section);
+    window.addEventListener("scroll", sync, { passive: true });
+    sync();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", sync);
+    };
+  }, [isHome, pathname]);
 
   /** FAB vs expanded composer */
   const [dockOpen, setDockOpen] = useState(false);
@@ -435,5 +477,7 @@ export function VaibeeChatDock() {
   );
 
   if (!portalEl) return null;
+  if (isHome && !homeDockVisible) return null;
+
   return createPortal(dockUi, portalEl);
 }

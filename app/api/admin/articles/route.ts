@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminRequest } from "@/lib/article-publish-auth";
 import { parseArticleDraft } from "@/lib/hive-article-publish";
 import { readHiveArticles } from "@/lib/hive-articles-store";
+import { extractXMediaFromBody } from "@/lib/extract-x-media";
 import { publishHiveArticleServer } from "@/lib/publish-hive-article-server";
 import { getAppOrigin } from "@/lib/stripe-server";
 
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest) {
     const existingSlug = String((body as { existingSlug?: string }).existingSlug ?? "").trim();
     const postToX = (body as { postToX?: boolean }).postToX !== false;
 
+    const xMediaResult = extractXMediaFromBody(body);
+    if (!xMediaResult.ok) {
+      return NextResponse.json({ ok: false, error: xMediaResult.error }, { status: 400 });
+    }
+
     const published = await publishHiveArticleServer({
       title: parsed.draft.title,
       excerpt: parsed.draft.excerpt,
@@ -46,6 +52,7 @@ export async function POST(req: NextRequest) {
       existingSlug,
       appOrigin: getAppOrigin(req),
       postToX,
+      xMedia: xMediaResult.media,
     });
 
     if (!published.ok) {

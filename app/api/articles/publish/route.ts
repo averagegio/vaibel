@@ -1,10 +1,9 @@
-import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { collectReservedArticleSlugs } from "@/lib/article-slugs";
 import { hasTeamArticleAccess, normalizeAuthorEmail } from "@/lib/article-publish-auth";
-import { buildHiveArticle, parseArticleDraft, slugFromDraft } from "@/lib/hive-article-publish";
-import { upsertHiveArticle } from "@/lib/hive-articles-store";
-import { ensureUniqueSlug } from "@/lib/slug";
+import { parseArticleDraft } from "@/lib/hive-article-publish";
+import { extractXMediaFromBody } from "@/lib/extract-x-media";
+import { publishHiveArticleServer } from "@/lib/publish-hive-article-server";
+import { getAppOrigin } from "@/lib/stripe-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +16,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const raw = body as { email?: string; tags?: string };
+  const raw = body as { email?: string; tags?: string; postToX?: boolean };
   const email = normalizeAuthorEmail(String(raw.email ?? ""));
   if (!email) {
     return NextResponse.json({ ok: false, error: "Sign in with a valid email to publish." }, { status: 400 });
@@ -39,29 +38,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
   }
 
-  const memberTags = ["Hive member", ...parsed.draft.tags.filter((t) => t.toLowerCase() !== "hive member")];
-  const draft = { ...parsed.draft, tags: memberTags };
-
-  const taken = await collectReservedArticleSlugs();
-  const slug = ensureUniqueSlug(slugFromDraft(draft), taken);
-  const entry = buildHiveArticle(draft, slug, email, null);
-
-  try {
-    await upsertHiveArticle(entry);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "";
-    if (msg === "duplicate_slug") {
-      return NextResponse.json({ ok: false, error: "Slug conflict — try again." }, { status: 409 });
-    }
-    console.error("[vaibel] member article publish failed:", e);
-    return NextResponse.json(
-      { ok: false, error: msg || "Could not save article to the database." },
-      { status: 500 },
-    );
+  const xMediaResult = extractXMediaFromBody(body);
+  if (!xMediaResult.ok) {
+    return NextResponse.json({ ok: false, error: xMediaResult.error }, { status: 400 });
   }
 
-  revalidatePath("/articles");
-  revalidatePath(`/articles/${slug}`);
+  const memberTags = ["Hive member", ...parsed.draft.tags.filter((t) => t.toLowerCase() !== "hive member")];
+  const postToX = raw.postToX !== false;
 
-  return NextResponse.json({ ok: true, slug, url: `/articles/${slug}` });
+  const published = await publishHiveArticleServer({
+    title: parsed.draft.title,
+    excerpt: parsed.draft.excerpt,
+    bodyText: parsed.draft.paragraphs.join("\n\n"),
+    author: parsed.draft.author,
+    tags: memberTags.join(", "),
+    slug: parsed.draft.slugHint,
+    authorEmail: email,
+    appOrigin: getAppOrigin(req),
+    postToX,
+    xMedia: xMediaResult.media,
+  });
+
+  if (!published.ok) {
+    const status = published.error.includes("Slug") ? 409 : 500;
+    return NextResponse.json({ ok: false, error: published.error }, { status });
+  }
+
+  return NextResponse.json({
+    ok: true,
+    slug: published.slug,
+    url: published.path,
+    xTweetUrl: published.xTweetUrl ?? null,
+    xError: published.xError ?? null,
+  });
 }

@@ -7,6 +7,7 @@ import {
   type ArticleDraftInput,
 } from "@/lib/hive-article-publish";
 import { announceHiveArticle } from "@/lib/hive-article-announce";
+import type { XMediaAttachment } from "@/lib/x-server";
 import { findHiveArticleBySlug, upsertHiveArticle } from "@/lib/hive-articles-store";
 import { ensureUniqueSlug } from "@/lib/slug";
 
@@ -15,7 +16,13 @@ export type PublishHiveArticleResult =
   | { ok: false; error: string };
 
 export async function publishHiveArticleServer(
-  input: ArticleDraftInput & { existingSlug?: string; appOrigin?: string; postToX?: boolean },
+  input: ArticleDraftInput & {
+    existingSlug?: string;
+    authorEmail?: string | null;
+    appOrigin?: string;
+    postToX?: boolean;
+    xMedia?: XMediaAttachment;
+  },
 ): Promise<PublishHiveArticleResult> {
   const parsed = parseArticleDraft(input);
   if (!parsed.ok) {
@@ -30,7 +37,9 @@ export async function publishHiveArticleServer(
   if (existing) taken.delete(existing.slug);
   const slug = ensureUniqueSlug(base, taken);
 
-  const entry = buildHiveArticle(parsed.draft, slug, existing?.authorEmail ?? null, existing);
+  const authorEmail =
+    input.authorEmail !== undefined ? input.authorEmail : (existing?.authorEmail ?? null);
+  const entry = buildHiveArticle(parsed.draft, slug, authorEmail, existing);
 
   try {
     await upsertHiveArticle(entry);
@@ -60,6 +69,7 @@ export async function publishHiveArticleServer(
       excerpt: entry.excerpt,
       articleUrl: `${origin}${path}`,
       postToX: input.postToX,
+      xMedia: input.xMedia,
     });
     if (x?.ok) {
       xTweetUrl = x.tweetUrl;

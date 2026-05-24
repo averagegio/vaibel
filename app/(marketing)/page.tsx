@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { HostedByMarquee } from "@/components/HostedByMarquee";
+import { LandingIntroHero } from "@/components/landing/LandingIntroHero";
 import { LandingThemeShell } from "@/components/landing/LandingThemeShell";
-import { LANDING_HERO_SCROLL_GAP_CLASS } from "@/lib/landing-hero";
-import { SignupCtaLink } from "@/components/SignupCtaLink";
 
 export const metadata: Metadata = {
   title: "The hive",
@@ -15,10 +14,17 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <main className="relative">
-      <div className={`w-full shrink-0 ${LANDING_HERO_SCROLL_GAP_CLASS}`} aria-hidden />
+      <LandingIntroHero />
+
+      {/* Scroll runway: intro fades while this section moves up into view */}
+      <div className="relative z-10 min-h-[100dvh]" aria-hidden />
 
       <LandingThemeShell>
-        <section className="relative z-20 w-full bg-[var(--lp-bg)]">
+        <section
+          id="landing-content"
+          className="relative z-10 w-full scroll-mt-4 border-t border-solid bg-[var(--lp-bg)] pt-10 sm:pt-12"
+          style={{ borderColor: "var(--lp-secondary-border)" }}
+        >
           <div className="mx-auto w-full max-w-[min(100%,88rem)] px-4 pb-16 pt-0 sm:px-8 sm:pb-20 lg:px-12 lg:pb-24">
             <div
               className="overflow-hidden rounded-2xl border border-solid"
@@ -29,39 +35,10 @@ export default function LandingPage() {
               }}
             >
               <HostedByMarquee />
-              {/* Hero: brand line + headline + subtext + CTAs */}
-              <div
-                className="border-t border-solid px-5 py-10 text-center sm:px-8 sm:py-12 lg:px-10 lg:py-14"
-                style={{ borderColor: "var(--lp-marquee-band-border)" }}
-              >
-                <div className="mx-auto max-w-3xl space-y-6 sm:text-left" style={{ color: "var(--lp-text)" }}>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-vaibee-cyan">vAIbee</p>
-                  <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                    The hive where vibe coders ship AI agents together.
-                  </h1>
-                  <p className="text-lg leading-relaxed" style={{ color: "var(--lp-muted)" }}>
-                    Sign up, wire your workspace, and plug agents into your flow with a calm JSON API — built for builders
-                    who move fast and keep it human.
-                  </p>
-                  <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
-                    <SignupCtaLink href="/auth?mode=signup">Create account</SignupCtaLink>
-                    <Link
-                      href="/store"
-                      className="inline-flex items-center justify-center rounded-full border border-solid px-6 py-3 text-sm font-semibold transition hover:border-vaibee-cyan/40"
-                      style={{
-                        borderColor: "var(--lp-sheet-border)",
-                        backgroundColor: "var(--lp-sheet)",
-                        color: "var(--lp-text)",
-                      }}
-                    >
-                      Browse the store
-                    </Link>
-                  </div>
-                </div>
-              </div>
 
               {/* Viable narrative + product visual */}
               <div
+                id="viable-section"
                 className="grid gap-10 border-t border-solid px-5 py-10 sm:gap-12 sm:px-8 sm:py-12 lg:grid-cols-2 lg:items-center lg:px-10 lg:py-14"
                 style={{ borderColor: "var(--lp-marquee-band-border)" }}
               >

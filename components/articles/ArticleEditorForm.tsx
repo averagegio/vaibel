@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { XPostImageField, type XPostImageValue } from "@/components/articles/XPostImageField";
 import { textFromParagraphs } from "@/lib/hive-article-utils";
 import { useAdminSecret } from "@/lib/use-admin-secret";
 
@@ -32,6 +33,8 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [xImage, setXImage] = useState<XPostImageValue>(null);
+  const [postToX, setPostToX] = useState(true);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +50,8 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
       slug,
       ...(mode === "admin" && existingSlug ? { existingSlug } : {}),
       ...(mode === "member" && email ? { email } : {}),
+      postToX,
+      ...(xImage ? { xImageBase64: xImage.base64, xImageMimeType: xImage.mimeType } : {}),
     };
 
     try {
@@ -196,6 +201,13 @@ export function ArticleEditorForm({ mode, email, initial, existingSlug }: Props)
           />
         </label>
       </div>
+
+      <XPostImageField
+        value={xImage}
+        onChange={setXImage}
+        postToX={postToX}
+        onPostToXChange={setPostToX}
+      />
 
       {error ? (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-800" role="alert">

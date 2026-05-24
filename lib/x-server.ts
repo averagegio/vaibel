@@ -89,11 +89,26 @@ export function buildArticleTweetText(title: string, excerpt: string, articleUrl
   return `${headline.slice(0, MAX_TWEET - URL_LEN - 4)}…\n\n${url}`;
 }
 
+export type XMediaAttachment = {
+  buffer: Buffer;
+  mimeType: string;
+};
+
 export type PostTweetResult =
   | { ok: true; tweetId: string; tweetUrl: string; text: string }
   | { ok: false; error: string };
 
-export async function postTweet(text: string): Promise<PostTweetResult> {
+async function uploadXMedia(client: TwitterApi, media: XMediaAttachment): Promise<string> {
+  const mediaId = await client.v1.uploadMedia(media.buffer, {
+    mimeType: media.mimeType,
+  });
+  if (!mediaId) {
+    throw new Error("X media upload did not return a media id.");
+  }
+  return mediaId;
+}
+
+export async function postTweet(text: string, media?: XMediaAttachment): Promise<PostTweetResult> {
   const body = text.trim();
   if (!body) {
     return { ok: false, error: "Tweet text is empty." };
@@ -104,7 +119,15 @@ export async function postTweet(text: string): Promise<PostTweetResult> {
 
   try {
     const client = xClient();
-    const { data } = await client.v2.tweet(body);
+    let mediaIds: [string] | undefined;
+    if (media) {
+      const mediaId = await uploadXMedia(client, media);
+      mediaIds = [mediaId];
+    }
+    const { data } = await client.v2.tweet({
+      text: body,
+      ...(mediaIds ? { media: { media_ids: mediaIds } } : {}),
+    });
     const tweetId = data.id;
     if (!tweetId) {
       return { ok: false, error: "X API did not return a tweet id." };
@@ -128,7 +151,8 @@ export async function postArticleAnnouncement(params: {
   title: string;
   excerpt: string;
   articleUrl: string;
+  media?: XMediaAttachment;
 }): Promise<PostTweetResult> {
   const text = buildArticleTweetText(params.title, params.excerpt, params.articleUrl);
-  return postTweet(text);
+  return postTweet(text, params.media);
 }

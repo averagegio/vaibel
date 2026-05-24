@@ -1,4 +1,9 @@
-import { postArticleAnnouncement, xAutoPostEnabled, type PostTweetResult } from "@/lib/x-server";
+import {
+  postArticleAnnouncement,
+  xAutoPostEnabled,
+  type PostTweetResult,
+  type XMediaAttachment,
+} from "@/lib/x-server";
 
 export type HiveArticleAnnounceResult = {
   x: PostTweetResult | null;
@@ -9,6 +14,7 @@ export async function announceHiveArticle(params: {
   excerpt: string;
   articleUrl: string;
   postToX?: boolean;
+  xMedia?: XMediaAttachment;
 }): Promise<HiveArticleAnnounceResult> {
   const wantX = params.postToX !== false && xAutoPostEnabled();
   if (!wantX) {
@@ -19,6 +25,7 @@ export async function announceHiveArticle(params: {
     title: params.title,
     excerpt: params.excerpt,
     articleUrl: params.articleUrl,
+    media: params.xMedia,
   });
 
   if (!x.ok) {

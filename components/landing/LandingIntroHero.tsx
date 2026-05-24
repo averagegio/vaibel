@@ -32,24 +32,21 @@ export function LandingIntroHero() {
       }}
       aria-hidden={hidden}
     >
-      <div className="absolute inset-0">
-        {/* px-3 below sm only; desktop img fills viewport with cover */}
-        <div className="flex h-full w-full items-start justify-center px-3 sm:block sm:p-0">
-          <img
-            src="/vaibo.gif"
-            alt=""
-            className="h-auto max-h-[100dvh] w-full object-contain object-top sm:absolute sm:inset-0 sm:h-full sm:max-h-none sm:w-full sm:object-cover sm:object-center"
-            loading="eager"
-            decoding="async"
-          />
-        </div>
+      <div className="absolute inset-0 bg-[#030712]">
+        <img
+          src="/vaibo.gif"
+          alt=""
+          className="h-full w-full object-cover object-[center_22%] sm:object-center"
+          loading="eager"
+          decoding="async"
+        />
       </div>
 
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 max-sm:opacity-90"
         style={{
           background:
-            "linear-gradient(180deg, rgba(3,7,18,0.35) 0%, rgba(3,7,18,0.12) 40%, rgba(3,7,18,0.55) 78%, rgba(3,7,18,0.82) 100%)",
+            "linear-gradient(180deg, rgba(3,7,18,0.45) 0%, rgba(3,7,18,0.2) 42%, rgba(3,7,18,0.62) 78%, rgba(3,7,18,0.88) 100%)",
         }}
         aria-hidden
       />

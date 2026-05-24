@@ -17,7 +17,7 @@ export default function LandingPage() {
       <LandingIntroHero />
 
       {/* Scroll runway: intro fades while this section moves up into view */}
-      <div className="relative z-10 min-h-[100dvh]" aria-hidden />
+      <div className="relative z-10 min-h-dvh bg-[#030712]" aria-hidden />
 
       <LandingThemeShell>
         <section

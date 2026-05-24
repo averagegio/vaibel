@@ -1,6 +1,8 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { isLandingIntroRoute, LANDING_INTRO_FADE_DISTANCE_PX } from "@/lib/landing-hero";
 
 const STORAGE_KEY = "vaibel-landing-theme";
 
@@ -33,8 +35,11 @@ function SunIcon({ className }: { className?: string }) {
 }
 
 export function LandingThemeShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isHomeIntro = isLandingIntroRoute(pathname);
   const [theme, setTheme] = useState<LandingTheme>("light");
   const [hydrated, setHydrated] = useState(false);
+  const [pastIntro, setPastIntro] = useState(!isHomeIntro);
 
   useEffect(() => {
     try {
@@ -55,14 +60,38 @@ export function LandingThemeShell({ children }: { children: React.ReactNode }) {
     }
   }, [theme, hydrated]);
 
+  useEffect(() => {
+    if (!isHomeIntro) {
+      setPastIntro(true);
+      return;
+    }
+    const onScroll = () => {
+      setPastIntro(window.scrollY >= LANDING_INTRO_FADE_DISTANCE_PX);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHomeIntro, pathname]);
+
   const isDark = theme === "dark";
+  const shellHiddenOnIntro = isHomeIntro && !pastIntro;
 
   return (
     <div
-      className="landing-theme-root min-w-0 bg-[var(--lp-bg)] text-[var(--lp-text)] transition-[background-color,color] duration-300 ease-out"
+      className={[
+        "landing-theme-root min-w-0 text-[var(--lp-text)] transition-[background-color,color,opacity] duration-300 ease-out",
+        shellHiddenOnIntro ? "bg-transparent" : "bg-[var(--lp-bg)]",
+      ].join(" ")}
       data-landing-theme={theme}
+      style={shellHiddenOnIntro ? { opacity: 0, pointerEvents: "none" } : undefined}
+      aria-hidden={shellHiddenOnIntro}
     >
-      <div className="relative z-20 mx-auto flex w-full max-w-[min(100%,88rem)] justify-end px-4 pb-3 pt-0 sm:px-8 lg:px-12">
+      <div
+        className={[
+          "relative z-20 mx-auto flex w-full max-w-[min(100%,88rem)] justify-end px-4 pb-3 pt-0 sm:px-8 lg:px-12",
+          shellHiddenOnIntro ? "invisible" : "",
+        ].join(" ")}
+      >
         <button
           type="button"
           onClick={() => setTheme(isDark ? "light" : "dark")}

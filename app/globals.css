@@ -114,6 +114,14 @@ body {
   text-transform: uppercase;
 }
 
+@media (max-width: 639px) {
+  .landing-intro-title {
+    font-size: clamp(1.35rem, 5.5vw, 1.85rem);
+    letter-spacing: 0.1em;
+    padding-inline: 0.25rem;
+  }
+}
+
 /* Landing: infinite horizontal ticker (duplicate track; move -50% for seamless loop) */
 @keyframes landing-marquee-scroll {
   from {

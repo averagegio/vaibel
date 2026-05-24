@@ -53,7 +53,7 @@ export function MarketingChrome() {
   const defaultLogo = (
     <Link href="/" className="flex shrink-0 items-center py-2 pr-2">
       <Image
-        src="/vaibeelogos.png"
+        src="/vai-bee.png"
         alt="vAIbee"
         width={160}
         height={88}
@@ -70,7 +70,7 @@ export function MarketingChrome() {
       className="inline-flex h-10 min-w-10 shrink-0 items-center justify-center rounded-xl border border-white/35 bg-white/10 px-2 outline-none transition hover:bg-white/18 focus-visible:ring-2 focus-visible:ring-white/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent group-hover/header:border-black/[0.08] group-hover/header:bg-[#eef2f8] group-hover/header:shadow-sm group-focus-within/header:border-black/[0.08] group-focus-within/header:bg-[#eef2f8] group-hover/header:focus-visible:ring-vaibee-navy/35 group-hover/header:focus-visible:ring-offset-white"
     >
       <Image
-        src="/vaibeelogos.png"
+        src="/vai-bee.png"
         alt=""
         width={120}
         height={66}

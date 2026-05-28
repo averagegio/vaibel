@@ -156,6 +156,37 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <footer className="border-t border-solid border-vaibee-border py-8 text-sm text-vaibee-muted">
+          <div className="mx-auto flex flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:max-w-[min(100%,88rem)] lg:px-12">
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <Link href="/terms" className="text-vaibee-navy hover:text-vaibee-cyan hover:underline">
+                Terms
+              </Link>
+              <span className="text-vaibee-muted">•</span>
+              <Link href="/privacy" className="text-vaibee-navy hover:text-vaibee-cyan hover:underline">
+                Privacy
+              </Link>
+              <span className="text-vaibee-muted">•</span>
+              <Link href="/cookies" className="text-vaibee-navy hover:text-vaibee-cyan hover:underline">
+                Cookie Policy
+              </Link>
+              <span className="text-vaibee-muted">•</span>
+              <Link href="/careers" className="text-vaibee-navy hover:text-vaibee-cyan hover:underline">
+                Careers
+              </Link>
+              <span className="text-vaibee-muted">•</span>
+              <Link href="/contact" className="text-vaibee-navy hover:text-vaibee-cyan hover:underline">
+                Contact
+              </Link>
+              <span className="text-vaibee-muted">•</span>
+              <Link href="/developers" className="text-vaibee-navy hover:text-vaibee-cyan hover:underline">
+                Developers
+              </Link>
+            </div>
+            <p className="text-vaibee-muted">© {new Date().getFullYear()} vAIbee. All rights reserved.</p>
+          </div>
+        </footer>
       </LandingThemeShell>
     </main>
   );

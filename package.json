@@ -4,6 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:webpack": "next dev --webpack",
+    "dev:phone:app": "node scripts/print-lan-url.mjs 3001 && next dev --webpack -p 3001 -H 0.0.0.0",
+    "dev:phone": "npm run dev:phone:app",
+    "dev:phone:window": "start \"Vaibel dev\" cmd /k \"cd /d %INIT_CWD% && npm run dev:phone:app\"",
+    "dev:phone2": "node scripts/print-lan-url.mjs 3002 && next dev --webpack -p 3002 -H 0.0.0.0",
+    "start:phone2": "node scripts/print-lan-url.mjs 3002 && next start -p 3002 -H 0.0.0.0",
+    "preview:phone2": "npm run build && npm run start:phone2",
+    "check:phone": "node scripts/check-phone-dev.mjs 3002",
+    "phone-push": "bash scripts/phone-push.sh",
+    "phone-serve": "bash scripts/phone-serve.sh",
+    "dev:phone:turbo": "node scripts/print-lan-url.mjs 3001 && next dev --turbo -p 3001 -H 0.0.0.0",
+    "clean": "node scripts/clean-next.mjs",
     "build": "node scripts/gen-favicon.mjs && next build",
     "gen-favicon": "node scripts/gen-favicon.mjs",
     "start": "next start",
@@ -12,11 +24,13 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "@swc/helpers": "^0.5.23",
     "@tavily/core": "^0.7.3",
     "next": "16.2.6",
     "openai": "^5.23.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "sharp": "^0.34.5",
     "stripe": "^17.7.0",
     "twitter-api-v2": "^1.29.0"
   },
@@ -30,5 +44,10 @@
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "@img/sharp-libvips-win32-x64": "^1.2.4",
+    "@img/sharp-win32-x64": "^0.34.5",
+    "lightningcss-win32-x64-msvc": "^1.32.0"
   }
 }
